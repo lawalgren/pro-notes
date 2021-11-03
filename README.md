@@ -87,40 +87,63 @@ Maximum object size is 5TB, largest object in a single PUT is 5GB.
 Recommended to use muti-part uploads if larger than 100MB
 
 Security
+
 	* Resource-based (Object ACL, Bucket Policy)
+ 
 	* User-based (IAM policies)
+ 
 	* Optional Multi-factor authentication before Delete
 
 Versioning
+
 	* New version with each write
+ 
 	* Enables "roll-back" and "un-delete" capabilities
+ 
 	* Old versions count as billable size until they are permanently deleted.
+ 
 	* Integrated with Lifecycle Management
  
 Optionally require Multi-factor Authentication:
+
 	* Safeguard against accidental deletion of an object
+
 	* Change the versioning state of your bucket
 
 Cross-Region Replication
+
 	* Security
+ 
 	* Compliance
+ 
 	* Latency
 
 S3 Storage Classes
+
 	* Standard - frequently accessed data
+ 
 	* Standard-IA - long-lived, infrequently accessed data
+ 
 	* One-Zone-IA - long-lived, infrequently accessed, non-critical data
+ 
 	* Reduced redundancy - Frequently accessed, non-critical data
+ 
 	* Intelligent-Tiering - Long-lived data with changing or unknown access patterns
+ 
 	* Glacier - Long-term data archiving with retrieval times ranging from minutes to hours
+ 
 	* Glacier Deep Archive - Long-term data with retrieval times within 112 hours
 
 S3 Intelligent Tiering Archive - Automatically moves data to Glacier or DeepGlacier
 
 S3 Lifecycle Management:
+
 	* Optimize storage costs
+ 
 	* Adhere to data retention policies
+ 
 	* Keep S3 volumes well-maintained
+ 
 	* Rules based on prefixes, tags, or previous version numbers
 
 S3 Analytics
@@ -142,11 +165,17 @@ S3 Encryption at Rest
 | Client-Side       | Encrypt objects using your own local encryption process before uploading to S3 (i.e. PGP, GPG, etc.) |
 
 More Nifty S3 Tricks:
+
 	* Transfer Acceleration - Speeds up data uploads using CloudFront in reverse
+ 
 	* Requester Pays - The requester rather than the bucket owner pays for requests and data transfer
+ 
 	* Tags - Assign tags to objects for use in costing, billing, security, etc.
+ 
 	* Events - Trigger notifications to SNS, SQS, or Lambda when certain events happen in your bucket
+ 
 	* Static Web Hosting - Simple and massively scalable static website hosting
+ 
 	* BitTorrent - Use the BitTorrent protocol to retrieve any publicly available object by automatically generating a .torrent file.
 
 ## Amazon Glacier
@@ -186,13 +215,19 @@ Variety of Optimized choices for IOPS, Throughput, and Cost
 Snapshots are great!
 
 Ebs vs instance stores
-	Instance stores - temporary, ideal for caches, buffers, work areas, data goes away when EC2 is stopped or terminated, locked to an EC2 instance, better performance (directly attached to the instance)
-	EBS - not locked to an instance, data persists, snapshots, worse performance (rides over the network)
+
+	* Instance stores - temporary, ideal for caches, buffers, work areas, data goes away when EC2 is stopped or terminated, locked to an EC2 instance, better performance (directly attached to the instance)
+ 
+	* EBS - not locked to an instance, data persists, snapshots, worse performance (rides over the network)
 	
 EBS Snapshots
+
 	* Cost-effective and easy backup strategy
+ 
 	* Share data sets with other users or accounts
+ 
 	* Migrate a system to a new AZ or Region
+ 
 	* Convert unencrypted volume to an encrypted volume
 
 Amazon Data Lifecycle Manager - Schedule snapshots for volumes or instances every X hours, Retention rules to remove stale snapshots
@@ -352,8 +387,11 @@ Features parallel processing and columnar data stores which are optimized for co
 Option to query directly from data files on S3 via Redshift Spectrum
 
 Data Lake:
+
 	* Query raw data without extensive pre-processing
+ 
 	* Lessen time from data collection to data value
+ 
 	* Identify correlations between disparate data sets
 
 ## Neptune
@@ -383,19 +421,31 @@ Use cases:
 
 
 Memcached
+
 	* Simple, no frills, straight forward
+ 
 	* You need to scale out and in as demand changes
+ 
 	* You need to run multiple CPU cores and threads
+ 
 	* You need to cache objects (i.e. like database queries)
 
 Redis
+
 	* You need encryption
+ 
 	* You need HIPAA compliance
+ 
 	* Support for clustering
+ 
 	* You need complex data types
+ 
 	* You need high-availability (replication)
+ 
 	* Pub/Sub capability
+ 
 	* Geospacial Indexing
+ 
 	* Backup and Restore
 
 ## Other Datastore Options
@@ -457,7 +507,9 @@ Mostly a search engine but also a document store (caution here)
 Amazon ElasticSearch Service components are sometimes referred to as an ELK stack
 
 Search and storage - ElasticSearch
+
 Intake - LogStash, CloudWatch, Firehose, IoT
+
 Analytics - Kibana
 
 Search engine that is large, scalable, and has a mature development community, ES
@@ -465,26 +517,37 @@ Search engine that is large, scalable, and has a mature development community, E
 ## Database Comparisons
 
 Database on EC2
+
 	* Ultimate control over database
+ 
 	* Preferred DB not available under RDS
 
 Amazon RDS
+
 	* Need traditional relational database for OLTP (Online Transaction Processing)
+ 
 	* Your data is well-formed and structured
 
 Amazon DynamoDB
+
 	* Name/value pair data or unpredictable data structure
+ 
 	* In-memory performance with persistence
 
 Amazon Redshift
+
 	* Massive amounts of data
+ 
 	* Primarily OLAP (Online Analytical Processing) workloads
 
 Amazon Neptune
+
 	* Relationships between objects a major portion of data value
 
 Amazon Elasticache
+
 	* Fast temporary storage for small amounts of data
+ 
 	* Highly volatile data
 
 ## Exam Tips
@@ -494,22 +557,31 @@ Read the AWS Storage Options white paper and note anti-patterns
 Know when to use various data stores
 
 RDS:
+
 	* Traditional relational data models
+ 
 	* Existing apps requiring RDBMS
+ 
 	* OLTP, ACID-compliant
 
 DynamoDB:
+
 	* High I/O needs
+ 
 	* Scale dynamically
 
 S3:
+
 	* BLOBs
 
 EC2:
+
 	* Database not supported under RDS
+ 
 	* Need complete control
 
 Redshift:
+
 	* OLAP
 
 Read the Whitepapers!
@@ -541,3 +613,188 @@ Consider NoSQL if you don't need relational database features
 Databases on EC2 cost less on the surface than RDS, but remember to factor in management (backups, patching, OS-level hardening)
 
 There can be a performance hit when RDS backups run if you have only a single AZ instance.
+
+# Networking
+
+## Concepts
+
+You should already know:
+
+	* Physical layout of AZs and Regions
+
+	* VPC concept and how to create
+
+	* Create private and public subnets
+
+	* What a NAT is and what "Disable Source/Destination Checks" means
+	
+	* Route table and routing terminology (default routes, local routes)
+
+	* IPv4 Addressing and Subnet Mask Notation (/16, /24, etc)
+
+	* Intermediate Networking Terminology (MAC address, port, gateway vs. router)
+
+OSI Model:
+
+| Layer | Name         | Example                                         | Mneumonic |
+| ---   | ---          | ---                                             | ---       |
+| 7     | Application  | Web Browser                                     | Away      |
+| 6     | Presentation | TLS/SSL Compression                             | Pizza     |
+| 5     | Session      | Setup, Negotiation, Teardown                    | Sausage   |
+| 4     | Transport    | TCP                                             | Throw     |
+| 3     | Network      | IR, ARP                                         | Not       |
+| 2     | Data Link    | MAC                                             | Do        |
+| 1     | Physical     | CAT5, fiber optic cable, 5GHz carrier frequency | Please    |
+
+AWS handles 1 & 2, Customer handles the rest
+
+
+Unicast - Directed communication (a phone call)
+
+Multicast - Communicating with multiple devices on the network at once (shouting on the street)
+
+Multicast is not usually possible on VPC (some workarounds exist)
+
+| Protocol                                               | Characteristics                                            | Plain Speak                                                                         | Uses                      |
+| ---                                                    | ---                                                        | ---                                                                                 | ---                       |
+| TCP (Layer 4)                                          | Connection-based, stateful, acknowledges receipt           | After everything I say, I want you to confirm that you received it.                 | Web, Email, File Transfer |
+| UPD (Layer 4)                                          | Connectionless, stateless, simple, no retransmission delay | I'm going to start talking, it's ok if you miss some words                          | Streaming media, DNS      |
+| ICMP (officially, it's Layer 3 but people debate this) | Used by network devices to exchange info                   | We routers can keep in touch about the health of the network using our own language | traceroute, ping          |
+
+
+### Ephemeral Ports
+
+Short-lived transport protocol ports used in IP communications
+
+Above the "well-known" IP ports (above 1024)
+
+"Dynamic Ports"
+
+"Suggested range is 49152 to 65535 but:
+
+	* Linux kernels generally use 32568 to 61000
+ 
+	* Windows platforms default from 1025
+
+NACL and Security Group implications
+
+### Reserved IP Addresses
+
+AWS uses certain IP addresses in each VPC as reserved -- you can't use them
+
+5 IPs are reserved in every VPC subnet (example 10.0.0.0/24):
+	
+	* 10.0.0.0: Network Address
+ 
+	* 10.0.0.1: Reserved by AWS for the VPC router
+
+	* 10.0.0.2: Reserved by AWS for Amazon DNS
+
+	* 10.0.0.3: Reserved by AWS for future use
+
+	* 10.0.0.255: VPCs don't support broadcast so AWS reserves this address
+
+Example: 192.168.8.16/28
+
+	* 192.168.8.16: Network
+ 
+	* 192.168.8.17: Router
+ 
+	* 192.168.8.18: DNS
+ 
+	* 192.168.8.19: Future use 
+ 
+	* 192.168.8.20-30: Available
+
+	* 192.168.8.31: Broadcast
+
+### AWS Availability Zones
+
+The Physical to Logical assignment of AZ's is done at the Account level (Your us-west-2a might be a different AZ then someone else's us-west-2a)
+
+## Network to AWS Connectivity
+
+### AWS Managed VPN
+
+What: AWS managed IPsec VPN connection over your existing internet
+
+When: Quick and usually simple way to establish a secure tunneled connection to a VPC; Redundant link for Direct Connect or other VPC VPN
+
+Pros: Supports static routes or BGP peering and routing
+
+Cons: Dependent on your Internet connection
+
+How: 
+
+	1. Designate an appliance to act as your customer gateway (usually your on-prem router)
+ 
+	2. Create the VPN connection in AWS and download the configuration file for your customer gateway 
+
+	3. Configure your customer gateway using the information from the configuration file
+	
+	4. Generate traffic from your side of the VPN connection to bring up the VPN tunnel
+	
+	5. Configure BGP routing (if needed)
+
+### AWS Direct Connect
+
+What: Dedicated network connection over private lines straight into the AWS backbone
+
+When: Require a "big pipeline" into AWS, lots of resources and services being provided on AWS to your corporate users
+
+Pros: More predictable network performance, potential bandwidth cost reduction; up to 10 Gbps provisioned connections; Supports BGP peering ad routing
+
+Cons: May require additional telecom and hosting provider relationships and/or new network circuits
+
+How: Work with your existing Data Networking Provider; Create Virtual Interfaces (VIF) to connect to VPCs (private VIF) or other AWS service like S3 or Glacier (public VIF)
+
+
+### AWS Direct Connect Plus VPN
+
+What: IPsec VPN connection over private lines
+
+When: Want added security of encrypted tunnel over Direct Connect
+
+Pros: More secure (in theory) than Direct Connect alone
+
+Cons: More complexity introduced by VPN layer
+
+How: Work with your existing Data Networking Provider
+
+### AWS VPN CloudHub
+
+What: Connect locations in a Hub and Spoke manner usin AWS's Virtual Private Gateway
+
+When: Link remote offices for backup or primary WAN access to AWS resources and each other
+
+Pros: Reuses existing internet connection; Supports BGP routes to direct traffic (for example, use MPLS first then CloudHub VPN as backup)
+
+Cons: Dependent on internet connection; No inherent redundancy
+
+How: Assign multiple Customer Gateways to a Virtual Private Gateway, each with their own BGP ASN and unique IP ranges
+
+### Software VPN
+
+What: You provide your own VPN endpoint and software
+
+When: You must manage both ends of the VPN connection for compliance reasons or you want to use a VPN option not supported by AWS
+
+Pros: Ultimate flexibility and manageability
+
+Cons: You must design for any needed redundancy across the whole chaino
+
+How: Install VPN software via Marketplace appliance or on an EC2 instance
+
+### Transit VPC
+
+What: Common strategy for connecting geographically disperse VPCs and locations in order to create a global network transit center
+
+When: Locations and VPC deployed assets across multiple regions that need to communicate wth one another
+
+Pros: Ultimate flexibility and manageability but also AWS-managed VPN hub-and-spoke between VPCs
+
+Cons: You must design for any needed redundancy across the whole chain
+
+How: Providers like Cisco, Juniper Networks and Riverbed have offerings which work with their equipment and AWS VPC
+
+## VPC to VPC Connectivity

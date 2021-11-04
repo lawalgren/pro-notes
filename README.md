@@ -798,3 +798,842 @@ Cons: You must design for any needed redundancy across the whole chain
 How: Providers like Cisco, Juniper Networks and Riverbed have offerings which work with their equipment and AWS VPC
 
 ## VPC to VPC Connectivity
+
+### VPC Peering
+
+What: AWS-provided network connectivity between two VPCs
+
+When: Multiple VPCs need to communicate or access each others resources
+
+Pros: Uses AWS backbone without touching the Internet
+
+Cons: If A is connected to B and B is connected to C, A cannot talk to C via B. (transitive peering not supported)
+
+How: VPC Peering is made; Accepter accepts request (either within Account or across Accounts); Both sides set up appropriate route
+
+### AWS PrivateLink
+
+What: AWS-provided network connectivity between two VPCs and/or AWS services using interface endpoints
+
+When: Keep Private Subnets truly private by using the AWS backbone to reach other services rather than the public internet
+
+Pros: Redundant - uses AWS backbone
+
+Cons: ~VPC Endpoints only available within the region they are created~ As of October 2018, they can be accessed over inter-region VPC peering
+
+How: Create Endpoint for needed AWS or Marketplace service in all needed subnets; access via the provided DNS hostname
+
+VPC Endpoints
+
+|               | Interface Endpoint                            | Gateway Endpoint                                         |
+| ---           | ---                                           | ---                                                      |
+| What          | Elastic Network Interface with a Private IP   | A gateway that is a target for a specific route          |
+| How           | Uses DNS to redirect traffic                  | Uses prefix lists in the route table to redirect traffic |
+| What Products | API Gateway, CloudFormation, CloudWatch, etc. | Amazon S3, DynamoDB                                      |
+| Securing      | Security Groups                               | VPC Endpoint Policies                                    |
+
+## Internet Gateways
+
+### Internet Gateway
+
+Horizontally scaled, redundant and highly available component that allows communication between your VPC and the internet
+
+No availability risk or bandwidth constraints
+
+If your subnet is associated with a route to the internet, then it is a public subnet
+
+Supports IPv4 and IPv6
+
+Purpose 1: Provide route table target for Internet-bound traffic
+
+Purpose 2: Perform NAT for instances with <u>public</u> IP addresses
+
+__<u>Does not perform NAT for instances with private IP's only.</u>__
+
+### Egress-Only Internet Gateway
+
+IPv6 addresses are globally unique and are therefore public by default
+
+Provides outbound internet access for IPv6 addressed instances
+
+Prevents inbound access to those IPv6 instances
+
+Stateful - forwards traffic from instance to internet and then sends back the response
+
+Must create a custom route for ::/0 to the Egress-Only Internet Gateway
+
+Use Egress-Only Internet Gateway instead of NAT for IPv6
+
+### NAT Instance
+
+EC2 instance from a special AWS-provided AMI
+
+Translate traffic from many private IP instances to a single public IP and back
+
+Doesn't allow public Internet initiated connections into private instances
+
+Not supported for IPv6 (use Egress-Only Gateway)
+
+NAT Instance must live on a public subnet with route to Internet Gateway
+
+Private instances in private subnet must have route to the NAT instance, usually the default route destination of 0.0.0.0/0
+
+### NAT Gateway
+
+Fully-managed NAT service that replaces need for NAT Instance on EC2
+
+Must be created in a public subnet
+
+Uses an Elastic IP for public IP for the life of the Gateway
+
+Private instances in private subnet must have route to the NAT Gateway, usually the default route destination of 0.0.0.0/0
+
+Created in specified AZ with redundancy in that zone
+
+For multi-AZ redundancy, create NAT Gateways in each AZ with routes for private subnets to use the local Gateway
+
+Up to 5Gbps bandwidth that can scale up to 45 Gbps
+
+Can't use a NAT Gateway to access VPC peering, VPN or Direct Connect, so be sure to include specific routes to those in route table (remember: most specific route is selected first)
+
+NAT Gateway vs NAT Instance
+
+|                 | NAT Gateway                              | NAT Instance                               |
+| ---             | ---                                      | ---                                        |
+| Availability    | Highly available within AZ               | On your own                                |
+| Bandwidth       | Up to 45 Gbps                            | Depends on bandwidth of instance type      |
+| Maintenance     | Managed by AWS                           | On your own                                |
+| Performance     | Optimized for NAT                        | Amazon Linux AMI configured to perform NAT |
+| Public IP       | Elastic IP that __can not__ be detatched | Elastic IP that __can__ be detatched       |
+| Security Groups | Cannot be associated with NAT gateway    | Can use Security Groups                    |
+| Bastion Server  | Not Supported                            | Can be used as bastion server              |
+
+## Routing
+
+### Routing Tables
+
+VPCS have an implicit router and main routing table
+
+You can modify the main routing table or create new tables
+
+Each route table must contain a local route for the CIDR block
+
+Most specific route for an address wins
+
+| Destination                                                                                                                                                                                                            | Target                              |
+| ---                                                                                                                                                                                                                    | ---                                 |
+| 10.0.0.0/16                                                                                                                                                                                                            | local                               |
+| 192.168.0.0/24                                                                                                                                                                                                         | vpg-xxxxx (virtual private gateway) |
+| 0.0.0.0/0                                                                                                                                                                                                              | nat-xxxxx (nat gateway)             |
+| pl-xxxxx (prefix list, predefined mapping of ip addresses for a particular service, intercepts traffic that would go through the default route -- often the internet -- and routes it through vpc endpoint connection) | vpce-xxxxx (vpc endpoint)           |
+
+| Address                   | Route      |
+| ---                       | ---        |
+| 10.0.45.34                | local      |
+| 64.56.34.1                | nat-xxxxx  |
+| 192.168.0.7               | vpg-xxxxx  |
+| Resolved IP address of S3 | vpce-xxxxx |
+| 10.0.255.255              | nowhere    |
+
+### Border Gateway Protocol
+
+Popular routing profile for the Internet
+
+"Propogates" information about the network to allow for dynamic routing
+
+Required for Direct Connect and optional for VPN
+
+Alternative of not using BGP with AWS VPC is static routes
+
+AWS supports BGP community tagging as a way to control traffic scope and route preference
+
+Required TCP port 179 + ephemeral ports (remember these?)
+
+Autonomous System Number (ASN) = Unique endpoint identifier
+
+Weighting is local to the router and higher weight is preferred path for outbound traffic
+
+## Enhanced Networking
+
+Generally used for High Performance Computing use-cases
+
+Uses single root I/O virtualization (SR-IOV) to deliver higher performance than traditional virtualized network interfaces
+
+Might have to install driver if other than Amazon Linux HVM AMI
+
+Intel 82599 VF Interface - 10 Gbps
+
+Elastic Network Adapter - 25 Gbps
+
+Placement Groups:
+
+|      | Clustered                                                        | Spread                                                            | Partition                                                               |
+| ---  | ---                                                              | ---                                                               | ---                                                                     |
+| What | Instances are placed into a low-latency group within a single AZ | Instances spread across underlying hardware                       | Instances are grouped into partitions and spread across racks           |
+| When | Need low network latency and/or high network throughput          | Reduces risk of simultaneous failure if underlying hardware fails | Reduce risk of correlated hardware failure for multi-instance workloads |
+| Pros | Get the most outof Enhanced Networking Instances                 | Can span multiple AZ's                                            | Better for large distributed or replicated workloads than Spread        |
+| Cons | Finite capacity: recommend launching all you might need up front | Max of 7 instances running per group per AZ                       | Not supported for Dedicated Hosts                                       |
+
+## Route 53
+
+Register domain names
+
+Check the health of your domain resources
+
+Route internet traffic for your domain
+
+You should already know:
+
+	* What is a DNS?
+ 
+	* DNS record types (A, CNAME, MX, TXT, etc.)
+ 
+	* Route 53 Concepts (alias, hosted zone, etc.)
+
+	* Why is it called Route 53?
+
+Route 53 Routing Policies:
+
+| Policy            | Route 53 is thinking...                                                                                                                                                                                          |
+| ---               | ---                                                                                                                                                                                                              |
+| Simple            | Simple. Here's the destination for that name                                                                                                                                                                     |
+| Failover          | Normally, I'd route you to <Primary>, but it appears down based on my Health Checks so I'll failover to <Backup>                                                                                                 |
+| Geolocation       | Looks like you're in Europe, so I'm going to route you to a resource closer to you in that region                                                                                                                |
+| Geoproximity      | You're closer to the US-EAST-1 region than US-WEST-2 so I'll route you to US-EAST-1 (can bias positive or negative, between +-99, which widens or shrinks the circle for routing traffic to a particular region) |
+| Latency           | Let me see which resources has lower latency from you, then I'll direct you that way.                                                                                                                            |
+| Multivalue Answer | I will return several IP addresses, as a sort of basic load balancer                                                                                                                                             |
+| Weighted          | You can setup multiple resources and I'll route according to the percentage of weight you assign each. (Weights from 0 to 255, 0 disables the route)                                                             |
+
+Percentage of traffic = Weight for specified record / Sum of all weights for all records
+
+| Weight for Endpoint 1 | Weight for Endpoint 2 | Percentage to Endpoint 1 | Percentage to Endpoint 2 |
+| ---                   | ---                   | ---                      | ---                      |
+| 10                    | 10                    | 50%                      | 50%                      |
+| 250                   | 101                   | ~71.2%                   | ~28.8%                   |
+| 0                     | 1                     | 0%                       | 100%                     |
+| 11                    | 10                    | ~52.3%                   | 47.6%                    |
+
+## CloudFront
+
+Distributed content delivery service for simple static asset caching up to 4k live and on-demand video streaming
+
+You should already know how to create a CloudFront distribution and understand edge location concept
+
+Integrated with Amazon Certificate Manager and supports SNI
+
+If you want to use with custom domain, need to use custom SSL cert, either from Certificate Manager or a 3rd party issuer uploaded to IAM
+
+SNI - allows the client to specify which host it wants to connect to, and the server can present multiple certificates on the same IP. Some old browsers don't support it, but people rarely worry about those.
+
+Security Policy - can adjust which SSL/TLS versions the CloudFront distribution supports
+
+All security policies support TLSv1.2, and browsers tend to use the most modern protocol available and fallback as needed. (TLS_2018 only supports TLSv1.2)
+
+## Elastic Load Balancer
+
+Distributes inbound connections to one or many backend endpoints
+
+Three different options:
+
+	* Application Load Balancer (Layer 7)
+ 
+	* Network Load Balancer (Layer 4)
+
+	* Classic Load Balancer (Layer 4 or Layer 7)
+
+Can be used for public or private workloads
+
+Consume IP addresses within a VPC subnet
+
+Similarities:
+
+|                                | Application LB | Network LB | Classic LB         |
+| ---                            | ---            | ---        | ---                |
+| Zonal Failover                 | Yes            | Yes        | Yes                |
+| Platform                       | VPC Only       | VPC Only   | EC2-Classic or VPC |
+| Health Checks                  | Yes            | Yes        | Yes                |
+| Cross-Zone Load Balancing      | Yes            | Yes        | Yes                |
+| CloudWatch Metrics             | Yes            | Yes        | Yes                |
+| SSL Offloading                 | Yes            | Yes        | Yes                |
+| Resource-based IAM Permissions | Yes            | Yes        | Yes                |
+
+Differences:
+
+|                              | Application LB                      | Network LB        | Classic LB            |
+| ---                          | ---                                 | ---               | ---                   |
+| Protocols                    | HTTPS, HTTP                         | TCP, UDP, TLS     | TCP, SSL, HTTP, HTTPS |
+| Path or Host-based Routing   | Yes                                 | No                | No                    |
+| WebSockets                   | Yes                                 | No                | No                    |
+| Server Name Indication (SNI) | Yes                                 | Yes               | No                    |
+| Sticky Sessions              | Yes                                 | Yes, as of 9/2019 | No                    |
+| Sticky IP, Elastic IP        | Only through AWS Global Accelerator | Yes               | No                    |
+| User Authentication          | Yes                                 | No                | No                    |
+
+### Routing
+
+Network Load Balancers:
+	
+	* Port number
+
+	* TCP connections to backend are persisted for the duration of the connection
+	
+	* Route based on the destination port
+
+	* Excells at speed
+
+Application Load Balancers:
+	
+	* Host-based routing
+ 
+	* Path-based routing
+
+	* HTTP header-based routing
+
+	* HTTP method-based routing
+
+	* Query string parameter-based routing
+
+	* Source IP address CIDR-based routing
+
+Sticky sessions - uniquely identify the client based on session id and ensure that traffic is routed to the same instance while session is alive
+
+## Exam Tips
+
+### VPCS in General
+
+Know the pros and cons of each On-prem to AWS connection mode
+
+Know the functions of the different VPC components (Customer Gateway, Virtual Private Gateway)
+
+Know that Direct Connect is not inherently redundant, so know how to architect a network that *is* (VPN, secondary direct connect)
+
+Multicast and Broadcast aren't supported in VPCs
+
+Know what is meant by "stateless", "stateful", "connectionless", and "connection-based" in terms of IP protocols
+
+Know what ephemeral ports are and why they might need to be in NACLs or SGs
+
+### Routing
+
+Understand BGP and how to use weighting to shift network traffic
+
+Know how routes in a route table are prioritized (most specific first)
+
+What other routing protocols does AWS support (none... only BGP)
+
+### VPC Peering
+
+CIDR ranges cannot overlap
+
+After VPC owner accepts a peering request, routes must be added to respective route tables
+
+Transitive peering is not supported, but mesh or hub-and-spoke architectures are... with proper NACLs and routes
+
+A Transit VPC is supported
+
+### Internet Gateways
+
+Difference between a NAT instance and NAT Gateway
+
+Internet Gateway is horizontally scaled, redundant, with no bandwidth constraints
+
+NATs do have bandwidth constraints, but...
+
+VPCs can have multiple NATs across AZs and subnets for scale -- so long as routes are defined properly
+
+Use Egress-Only Gateway for IPv6
+
+### Route 53
+
+Understand different types of routing policies and use cases
+
+Know the Weighted Routing formula
+
+Route 53 is a global service
+
+### CloudFront
+
+Understand what must happen to use a custom domain with CloudFront
+
+Understand what SNI enables and the necessary alternative
+
+### Elastic Load Balancer
+
+Know the different types of Load Balancers and at which OSI Layer they work
+
+Understand which major features each deliver (protocol,SNI, Sticky Sessions)
+
+Know what sticky sessions are and when they come into play
+
+Whitepapers:
+
+* https://d0.awsstatic.com/whitepapers/aws-amazon-vpc-connectivity-options.pdf
+
+* https://d1.awsstatic.com/whitepapers/Networking/integrating-aws-with-multiprotocol-label-switching.pdf
+
+* https://docs.aws.amazon.com/vpc/latest/userguide/security.html
+
+## Pro Tips
+
+Direct Connect may be a more complex and costlier option to setup, but it could save big on bandwidth costs
+
+Explicitly deny as much traffic as you can with NACLs and SG -- Principle of Least Privilege
+
+Think through your VPC layout (see 2017 re:Invent video "Networking Many VPCs: Transit and Shared Architecture.)
+
+You can use Route 53 for your domain even if AWS isn't your registrar
+
+ELBs provide a useful layer of abstraction (as does Route 53 too!)
+
+# Security
+
+## Concepts
+
+Principle of Least Privilege - Give users (or services) nothing more than those privileges required to perform their intended fuction (and only when they need them)
+
+Security Facets:
+
+| Facet          | Description                                        | AWS Example                                                          |
+| ---            | ---                                                | ---                                                                  |
+| Identity       | Who are you?                                       | Root Account User, IAM User, Temporary Security Credentials          |
+| Authentication | Prove that you're who you say                      | Multi-factor Authentication, Client-side SSL Certificate             |
+| Authorization  | Are you allowed to do this?                        | IAM Policies                                                         |
+| Trust          | Do other entities that I trust say they trust you? | Cross-Account Access, SAML-based Federation, Web Identity Federation |
+
+Components:
+
+	* Identities - People, Objects, Other computers
+
+	* Identity Provider - Contains identity store / brokers
+
+	* Identity Store - Stores identities & metadata about identites
+
+	* Identity Broker - Takes requests from identites / applications and run them against the identity store
+
+	* Federation - The identity broker reaches out to other identity providers (facebook, google, cognito), the other provider returns a token/key, which lets the identity access the service
+
+
+SAML 2.0:
+
+	* Can handle both **authorization** and **authentication**
+ 
+	* XML-based protocol
+ 
+	*  Can contain user, group membership and other useful information
+
+	*  Assertions in the XML for authentication, attributes or authorization
+
+	* Best suited for Single Sign-on for enterprise users
+
+OAuth 2.0:
+
+	* Allows sharing of protected assets without having to send login credentials
+
+	* Handles **authorization** only, not authentication
+ 
+	* Issues token to client
+ 
+	* Application validates token with Authorization Server
+
+	* Delegate access, allowing the client applications to acccess infromation on behalf of user
+
+	* Best suited for API authorization between apps
+
+OpenID:
+
+	* Identity layer built on top of OAuth 2.0, adding **authentication**
+
+	* Uses REST/JSON message flows
+
+	* Supports web clients, mobile clients, Javascript clients
+
+	* Extensible
+
+	* Best suited for Single Sign-on for consumer
+
+Compliance:
+
+	AWS has implemented certain processes, practices, and standards as prescribed by many national and international standards bodies - can see in AWS Artifact
+
+## Multi-Account Management
+
+Most large organizations will have multiple AWS accounts
+
+Segregation of duties, cost allocation, and increase agility
+
+Need methods to properly manage and maintain them
+
+When should you use multiple accounts?
+
+	* Do you require administrative isolation between workloads?
+
+	* Do you require limited visibility and discoverability of workloads?
+
+	* Do you require strong isolation to minimize "blast radius"?
+
+	* Do you require strong isolation of recovery and/or auditing data?
+
+AWS Tools for Account Management:
+
+	* AWS Organizations
+
+	* Service Control Policies
+	
+	* Tagging
+
+	* Resource Groups
+
+	* Consolidated Billing
+
+Identity Account Structure:
+
+	* Manage all user accounts in one location
+
+	* Users trust relations from IAM roles in sub-accounts to Identity Account to grant temporary access
+
+	* Variations include by Business Unit, Deployment Environment, Geography
+
+Logging Account Structure:
+	
+	* Centralized logging repository
+
+	* Can be secured so as to be immutable
+	
+	* Can use Service Control Policies (SCP) to prevent sub-accounts from changing logging settings
+
+Publishing Account Structure:
+	
+	* Common repository for AMI's, Containers, Code
+
+	* Permits sub-accounts to use pre-approved standardized services or assets
+
+Information Security Account Structure:
+	
+	* Hybrid of consolidated security and logging
+
+	* Allows ond poin of control and audit
+
+	* Logs cannot be tampered with by sub-account users
+
+Central IT Account Structure:
+	
+	* IT can manage IAM users and groups while assigning to sub-account roles
+
+	* IT can provide shared services and standardized assets (AMI's, databases, EBS, etc.) that adhere to corporate policy
+
+Service Control Policies cascade down the tree - i.e. define scp for parent account and it is also applied to all its children
+
+## Network Controls and Security Groups
+
+### Security Groups
+
+Virtual firewalls for individual assets (EC2, RDS, AWS Workspaces, etc)
+
+Controls inbound and outbound traffic for TCP, UDP, ICMP, or custom protocols
+
+Port or port ranges
+
+Inbound rules are by Source IP, Subnet, or other Security Group
+
+Outbound rules are by Destination, IP, Subnet, or other Security Group
+
+### Network Access Control Lists
+
+Additional layer of security for VPC that acts as a firewall
+
+Apply to entire subnets rather than individual assets
+
+Default NACL allows all inbound and outbound traffic
+
+NACLs are stateless -- meaning outbound traffic simple obeys outbound rules -- no connection is maintained
+
+Can duplicate or further restrict access along with Security Groups
+
+Remember ephemeral ports for Outbound if you need them
+
+### Why use SG's and NACL's
+
+NACLs provide a backup method of security if you accidentally change your SG to be too permissive
+
+Covers the entire subnet so users to create instances and fail to assign a proper SG are still protected
+
+Part of a multi-layer Least Privilege concept to explicitly allow and deny
+
+## AWS Directory Services
+
+| Directory Service Option | Description | Best for... |
+| --- | --- | --- | --- |
+| AWS Cloud Directory | Cloud-native directory to share and control access to hierarchical data between applications | Cloud applications that need hierarchical data with complex relationships |
+| Amazon Cognito | Sign-up and sign-in functionality that scales to millions of users and federated to public social media services | Develop consumer apps or SaaS |
+| AWS Directory Service for Microsoft Active Directory | AWS-managed full Microsoft AD (standard or enterprise) running on Windows Server 2012 R2 | Enterprises that want hosted Microsoft AD or you need LDAP for Linux apps |
+| AD Connector | Allows on-premises users to log into AWS services with their existing AD credentials. Also allows EC2 instances to join AD domain | Single sign-on for on-prem employees and for adding EC2 instances to the domain |
+| Simple AD | Low scale, low cost AD implementation based on Samba | Simple user directory, or you need LDAP compatibility |
+
+### AD Connector vs Simple AD
+
+AD Connector:
+
+	* Must have existing AD
+
+	* Existing AD users can access AWS assets via IAM roles
+
+	* Supports MFA via existing RADIUS-based MFA infrastructure
+
+Simple AD:
+
+	* Stand-alone AD based on Samba
+
+	* Supports user accounts, groups, group policies, and domains
+
+	* Kerberos-based SSO
+
+	* MFA not supported
+
+	* No Trust Relationships
+
+## Credentials and Access Management
+
+Know what IAM is and components
+
+Users, Groups, Roles, Policies
+
+Resource-based Policies vs Identity-based Policies
+
+Know how to read and write policies in JSON
+
+Services->Actions->Resources
+
+AWS Security Token Service (STS) - allows us to temporarily grant credential access to applications or users, sourced from IAM or one of the federated options
+
+Amazon Cognito - designed to be used in mobile applications, cognito sdk already has a lot of the security handling built-in
+
+Token Vending Machine Concept:
+
+	* Common way to issue credentials for mobile app development
+
+	* Anonymous TVM (token vending machine) - used as a way to provide access to AWS services only, does not store user identity
+
+	* Identity TVM - used for registration and login, and authorizations
+
+	* AWS now recommends that mobile developers use Cognito and the related SDK
+
+AWS Secrets Manager:
+
+	* Store passwords, encryption keys, API keys, SSH keys, PGP keys, etc.
+
+	* Alternative to storing passwords or keys in a "vault" (software or physical)
+
+	* Can access secrets via API with fine-grained access control provided by IAM
+
+	* Automatically rotate RDS database credentials for MySQL, PostgreSQL and Aurora
+
+	* Better than hard-coding credentials in scripts or application
+
+## Encryption
+
+Encryption at Rest - Data is encrypted where it is stored such as on EBS, on S3, in an RDS database, or in an SQS queue waiting to be processed
+
+Encryption in Transit - Data is encrypted as it flows through a network or process, such as SSL/TLS for HTTPS, or with IPSec for VPN connections
+
+Key Management Service (KMS):
+
+	* Key storage, management, and auditing
+
+	* Tightly integrated into MANY AWS services like Lambda, S3, EBS, EFS, DynamoDB, SQS, etc.
+
+	* You can import your own keys or have KMS generate them
+
+	* Control who manages and accesses keys via IAM users and roles
+
+	* Audit use of keys via CloudTrail
+
+	* Differs from Secret Manager as it's purpose-built for encryption key management
+
+	* Validated by many compliance schemes (PCI DSS Level 1, FIPS 140-2 Level 2)
+
+CloudHSM
+
+	* Dedicated hardware device, Single Tenanted
+
+	* Must be within a VPC and can access via VPC Peering
+	
+	* Does not natively integrate with many AWS services like KMS, but rather requires custom application scripting
+
+	* Offload SSL from web servers, act as an issuing CA, enable TDE for Oracle databases
+
+| | "Classic" Cloud HSM | Current Cloud HSM |
+| --- | --- | --- |
+| Device | safeNet Luna SA | Proprietary |
+| Pricing | Upfront cost required ($5000) | No upfront cost, pay per hour |
+| High Availability | Have to buy a second device | Clustered |
+| FIPS 140-2 | Level 2 | Level 3 |
+
+CloudHSM vs KMS:
+
+| | CloudHSM | AWS KMS |
+| --- | --- | --- |
+| Tenancy | Single-Tenant HSM | Multi-Tenant AWS Service |
+| Availability | Customer-managed durability and available | Highly available and durable key storage and management |
+| Root of Trust | Customer managed root of trust | AWS managed root of trust |
+| FIPS 140-2 | Level 3 | Level 2 / Level 3 in some areas |
+| 3rd Party Support | Broad 3rd Party Support | Broad AWS Service Support |
+
+AWS Certificate Manager:
+	
+	* Managed service that lets you provision, manage, and deploy public or private SSL/TLS certificates
+
+	* Directly integrated into many AWS services like CloudFront, ELB, and API Gateway
+	
+	* Free public certificates to use with AWS services; no need to register via a 3rd party certificate authority
+
+	* ...but you can import 3rd party certificates for use on AWS
+
+	* Supports wildcard domains (\*.domain.com) to cover all your subdomains
+
+	* Managed certificate renewal (no embarassing "certificate expired" messages for customers)
+
+	* Can create a managed Private Certificate Authority as well for internal or proprietary apps, services, or devices
+
+## Distributed Denial of Service Attacks
+
+Mitigation:
+
+| Best Practice | AWS Service |
+| --- | --- |
+| Minimize attack surface | NACLs, SGs, VPC Design |
+| Scale to absorb attack | Auto Scaling Groups, AWS CloudFront, Static Web Content via S3 |
+| Safeguard exposed resources | Route 53, AWS WAF, AWS Shield |
+| Learn normal behavior | AWS GuardDuty, CloudWatch |
+| Have a plan | All You! |
+
+## IDS/IPS
+
+**Intrusion Detection System** (IDS) watches the network and systems for suspicious activity that might indicate someone trying to compromise a system
+
+**Intrusion Prevention System** (IPS) tries to prevent exploits by sitting behind firewalls and scanning and analyzing suspicious content fro threats
+
+Normally comprised of a **Collection/Monitoring** system and **monitoring agents on each system**
+
+Logs collected or analyzed in CloudWatch, S3 or third-party tools (Splunk, SumoLogic, etc.) sometimes called a **Security Information and Event Management (SIEM) system**
+
+CloudWatch vs. CloudTrail:
+
+| CloudWatch | CloudTrail |
+| --- | --- |
+| Log events across AWS services. Think operations | Log API activity across AWS services; Think activities |
+| Higher-level comprehensive Monitoring and Eventing | More low-level granular |
+| Log from multiple accounts | Log from multiple accounts |
+| Logs stored indefinitely | Logs stored to S3 or CloudWatch indefinitely |
+| Alarms history for 14 days | No native alarming; Can use CloudWatch alarms |
+
+## Service Catalog
+
+Framework allowing administators to create pre-defined products and landscapes for their users
+
+Granular control over which users have access to which offerings
+
+Makes use of adopted IAM roles so users don't need underlying service access
+
+Allows end users to be self-sufficient while upholding enterprise standards for deployments
+
+Based on CloudFormation templates
+
+Administrators can version and remove products. Existing running product versions will not be shutdown
+
+### AWS Service Catalog Constraints
+
+| Type | What | Why |
+| --- | --- | --- |
+| Launch Constraint | IAM role that Service Catalog assumes when an end user launches a product | Without a launch constraint, the end-user must have all permissions needed within their own IAM credentials |
+| Notification Constraint | Specifiesthe Amazon SNS topic to receive notifications about stack events | Can get notifications when products are launched or have problems |
+| Template Constraint | One or more rules that narrow allowable values an end-user can select | Adjust product attributes based on choices a user makes. (Example: Only allow certain instances types for DEV environment) |
+
+If we share a catalog, the launch role i  pulled from the original account, meaning resources are provisioned in the master account. Can override, creating a new launch constraint associated with a new launch role.
+
+Launch constraints are associated with a product in the portfolio, not at the portfolio level, so can have individual roles defined for each and every product.
+
+## Exam Tips
+
+### Multi-Account Management
+
+Know the different models an best practices for cross-account management of security
+
+Know how roles and trusts are used to create cross-account relationships and authorizations
+
+### Network Controls and Security
+
+Know the differences and capabilities of NACLs and SGs
+
+NACLs are stateless
+
+Get some hands-on with NACLs and SGs to reinforce your knowledge
+
+Remember the ephemerals
+
+### AWS Directory Services
+
+Understand the types of Directory Services offered by AWS -- especially AD Connector and Simple AD
+
+Understand use-cases for each type of Directory Service
+
+Be familiar with how on-prem Active Directory implementation might connect to AWS and what functions that might enable
+
+### Credential and Access Management
+
+Know IAM and its components
+
+Know how to read and write IAM policies in JSON
+
+Understand Identity Brokers, Federation, and SSO
+
+Know options and steps for temporary authorization
+
+### Encryption
+
+Know differences between AWS KMS and CloudHSM and use cases
+
+The test will likely be restricted to the "classic" CloudHSM
+
+Understand AWS Certificate Manager and how it integrates with other AWS services
+
+### DDoS Attacks
+
+Understand what they are and some best practices to limit your exposure
+
+Know some options to mitigate them using AWS services
+
+### IDS/IPS
+
+Understand the difference between IDS and IPS
+
+Know what AWS services can help with each
+
+Understand the differences between CloudWatch and CloudTrail
+
+### Service Catalog
+
+Know that it allows users to deploy assets through inheriting rights
+
+Understand how Service Catalog can work in a multi-account scenario
+
+### Whitepapers
+
+* https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html
+
+* https://d1.awsstatic.com/whitepapers/Security/DDoS_White_Paper.pdf
+
+* https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/wellarchitected-security-pillar.pdf
+
+## Pro Tips
+
+Know that security will be front-of-mind for every client evaluating the cloud... but rarely are there sound processes in place
+
+Acknowledge concerns and be ready with a process (Cloud Adoption Framework is a good start.)
+
+Leverage assessments and checklists as illustrations of care and best-practice
+
+Migrating to the cloud is often more secure than on-prem due to increased transparency and visibility
+
+Speak in terms of risk as a continuum rather than an absolute
+
+Consider AWS Certified Security -- Specialty or other security-minded certification like CISSP

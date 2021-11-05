@@ -1637,3 +1637,1414 @@ Migrating to the cloud is often more secure than on-prem due to increased transp
 Speak in terms of risk as a continuum rather than an absolute
 
 Consider AWS Certified Security -- Specialty or other security-minded certification like CISSP
+
+# Migrations
+
+## Migration Strategies
+
+| Migration Strategy | Description | Example |
+| --- | --- | --- | --- |
+| Re-Host | "Lift and Shift", simply move assets with no changes | Move on-prem MySQL database to EC2 Instance |
+| Re-Platform | "Lift and Reshape", Move assets but change underlying platforms | Migrate on-prem MySQL database to RDS MySQL |
+| Re-Purchase | "Drop and Shop", Abandon existing and purchase new. | Migrate legacy on-prem CRM system to salesforce.com |
+| Rearchitect | Redesign application in a cloud-native manner | Create a server-less version of a legacy application |
+| Retire | Get rid of applications which are not needed | End-of-life the label printing app because no one uses it anymore |
+| Retain | "Do nothing option"; Decide to reevaluate at a future date | "Good new Servers, you'll live to see another day" |
+
+| Migration Strategy | Effort (Time and Cost) | Opportunity to Optimize |
+| --- | --- | --- |
+| Re-Host | \*\* | \* |
+| Re-Platform | \*\*\*\* | \*\*\* |
+| Re-Purchase | \*\*\* | \* |
+| Rearchitect | \*\*\*\*\* | \*\*\*\*\* |
+| Retire | | |
+| Retain | \* | |
+
+## Cloud Adoption Framework
+
+TOGAF:
+	
+	* The Open Group Architectural Framework
+
+	* Approach for designing, planning, implementing and governing enterprise IT architectures
+
+	* Started development in 1995
+
+	* De factor standard in EA practice
+
+	* Favored enterprise architecture for most Fortune 500 companies
+
+	* Enterprise Architecture is not TOGAF...
+
+	* But TOGAF often fills a vacuum
+
+	* Often misunderstood and victim of unreasonable expectations
+
+	*	Not all practitioners are great practitioners
+
+	* TOGAF is not a cookbook
+
+	* People take it too literally
+
+	* "Architects gonna architect"
+
+What is a Framework?
+
+	* IS some information to help you get your mind around a problem
+
+	* IS open fr localization and interpretation
+
+	* IS something you should adapt to your organizational culture
+
+	* IS NOT a perfect step-by-step recipe to success
+
+	* IS NOT something to hide behind with big words
+
+### Typical Cloud Adoption Phases
+
+Project - In the project phase, you are running projects to get familiar and experience benefits from the cloud
+
+Foundation - After experiencing the benefits of cloud, you then build the foundation to scale your cloud adoption. This includes creating a landing zone (a pre-configured, secure, multi-account AWS environment), Cloud Center of Excellence (CCoE), operations model, as well as assuring security and compliance methods
+
+Migration - In this stage, you migrate existing applications including mission-critical applications or entire data centers to the cloud as you scale your adoption across a growing portion of your IT portfolio
+
+Reinvention - Now that your operations are in the cloud, you can focus on reinvention by taking advantage of the flexibility and capabilities of AWS to transform your business by speeding time to market and increasing the attention on innovation
+
+### Cloud Adoption Framework
+
+There's more to cloud adoption than technology.
+
+To fully unlock the potential benefits of a cloud migration, a holistic approach must be considered. 
+
+Business:
+
+	* Creation of a strong business case for cloud adoption
+
+	* Business goals are congruent with cloud objectives
+
+	* Ability to measure benefits (TCO, ROI)
+
+People:
+
+	* Evaluate organizational roles and structures, new skills and process needs to identify gaps
+
+	* Incentives and Career Management aligned with evolving roles
+
+	* Training options appropriate for learning styles
+
+Governance:
+
+	* Portfolio Management geared for determining cloud eligibility and priority
+
+	* Program and Project management more agile projects
+
+	* Align KPI's with newly enabled business capabilities
+
+Platform:
+
+	* Resource provisioning can happen with standardization
+
+	* Architecture patterns adjusted to leverage cloud-native
+
+	* New application development skill and processes enable more agility
+
+Security:
+
+	* Identity and Access Management modes change
+
+	* Logging and audit capabilities will evolve
+
+	* Shared Responsibility Model removes some and adds some facets
+
+Operations:
+
+	* Service monitoring has potential to be highly automated
+
+	* Performance management can scale as needed
+
+	* Business continuity and disaster recovery takes on new methods in the cloud
+
+## Hybrid Architecture
+
+Hybrid Architectures make use of cloud resources along with on-premises resources
+
+Very common first step as a pilot for cloud migrations
+
+Infrastructure can augment or simply be extensions of on-prem platforms -- VMWare, for example
+
+Ideally, integrations are loosely coupled -- meaning each end can exist without extensive knowledge of the other side
+
+Examples:
+	
+	* Storage Gateway creates a bridge between on-prem and AWS
+
+		* Seamless to end-users
+
+		* Common first step into tthe cloud due to low risk and appealing economics
+
+	* Middleware often a great way to leverage cloud services
+
+		* Loosely-coupled, canonical-based
+
+	* VMWare vCenter Plug-in allows transparent migration of VMs to and from AWS
+
+		* VMWare Cloud furthers this concept with more public cloud-native features
+
+## Migration Tools
+
+Storage Migration
+
+	* AWS Storage Gateway
+
+	* AWS Snowball
+
+Server Migration Service
+
+	* Automates migration of on-premises VMware vSphere or Microsoft Hyper-V/SCVMM virtual machines to AWS
+
+	* Replicates VMs to AWS, syncing volumes and creating periodic AMIs
+
+	* Minimizes cutover downtime by syncing VMs incrementally
+
+	* Supports Windows and Linux VMs only (just like AWS)
+
+	* The Server Migration Connector is downloaded as a virtual appliance into your on-prem vSphere or Hyper-V setup
+
+Database Migration Service
+
+	* Database Migration Service (DMS) along with the Schema Conversion Tool (SCT) helps customers migrate databases to AWS RDS or EC2-based databases
+
+	* Schema Conversion Tool can copy database schemas for homogenous migration (same database) and convert schemas for heterogeneous migrations (different database)
+
+	* DMS is used for smaller, simpler conversions and also supports MongoDB and DynamoDB
+
+	* SCT is used for larger, more complex datasets like data warehouses
+
+	* DMS has replication function for on-prem to AWS or to Snowball or S3
+
+Application Discovery Service
+
+	* Gathers information about on-premises data centers to help in cloud migration planning
+
+	* Often customers don't know the full inventory or status of all their data center assets, so this tool helps with that inventory
+
+	* Collects config, usage and behavior data from your servers to help in estimating TCO of running on AWS
+
+	* Can run as agent-less (VMware environment) or agent-based (non-VMware environment)
+
+	* Only supports those OSes that AWS supports (Linux and Windows)
+
+View all these in AWS Migration Hub
+
+## Network Migrations and Cutovers
+
+### CIDR Reservations
+
+Ensure your IP addresses will not overlap between VPC and on-prem
+
+VPCs support IPv4 netmasks from /16 to /28
+
+	* /16 = 255.255.0.0 = 65536 addresses
+
+	* /28 = 255.255.255.240 = 16 addresses
+
+Remember: 5 IPs are reserved in every VPC subnet that will take up addresses
+
+	* /28 = 255.255.255.240
+
+		* 16 addresses
+
+		* 14 "usable" minus 3 reserved addresses in a VPC = 11 available in VPC
+
+### Network Migrations
+
+Most organizations start with a VPN connection to AWS
+
+As usage grows, they might choose Direct Connect but keep the VPN as a backup
+
+Transition from VPN to Direct Connect can be relatively seamless using BGP
+
+Once Direct Connect is set-up, configure both VPN and Direct Connect within the same BGP prefix
+
+From the AWS side, the Direct Connect path is always preferred...
+
+... but you need to be sure the Direct Connect path is the preferred route from your network to AWS and not VPN (through BGP weighting or static routes)
+
+### Snow Family
+
+Evolution of AWS Import/Export process
+
+Move massive amounts of data to and from AWS
+
+Data transfer as fast or as slow as you're willing to pay a common carrier (UPS, DHL, FedEx, etc.)
+
+Encrypted at rest
+
+And also in transit!
+
+AWS Import/Export - Ship an external hard drive to AWS. Someone at AWS plugs it in and copies your data to S3
+
+AWS Snowball - Ruggedized NAS in a box AWS ships to you. You copy over up to 80TB of your data and ship it back to AWS. They copy the data over to S3
+
+AWS Snowball Edge - Same as Snowball, but with onboard Lambda and clustering (portable AWS, capture and process data in a very remote location)
+
+AWS Snowmobile - A literal shipping container full of storage (up to 100PB) and a truck to transport it
+
+## Exam Tips
+
+### Migration Strategies
+
+Understand the different strategies that companies might undertake when deciding if the cloud is right for them
+
+Understand the typical trade-offs and relative benefits for each strategy
+
+### Cloud Adoption Framework
+
+Know what a "framework" is and the realistic expectations that should accompany it
+
+Understand the high-level components of the Cloud Adoption Framework
+
+Most importantly, know that cloud adoption is only partially a technology effort
+
+### Hybrid Architectures
+
+Be able to speak to some typical hybrid architectures that leverage both on-prem and cloud assets
+
+Know that VMware has some nifty tools for abstracting workloads across on-prem and clud, such as the Import plug-in
+
+### Migrations
+
+Understand the different services and tools available for migrating servers, storage and databases
+
+Tool usage specifics won't likely be on the exam, except maybe Storage Gateway
+
+### Network Migration and Cutovero
+
+Know various hybrid networking architectures (See Networking chapter)
+
+Understand that smooth transitions from and to VPN and Direct Connect can be done using BGP routing; abrupt route changes risk downtime
+
+### Whitepapers
+
+* https://d1.awsstatic.com/whitepapers/Migration/aws-migration-whitepaper.pdf
+
+* https://d1.awsstatic.com/whitepapers/aws_cloud_adoption_framework.pdf
+
+* https://d1.awsstatic.com/whitepapers/Migration/migrating-applications-to-aws.pdf
+
+* https://d1.awsstatic.com/whitepapers/cloud-driven-enterprise-transformation-on-aws.pdf?did=wp_card&trk=wp_card
+
+## Pro Tips
+
+Technology is often a minor part of a cloud migration project
+
+Project management discipline is a must -- don't underestimate this
+
+Adapt the Cloud Adoption Framework for your own organization's culture
+
+Leverage the CAF to get buy-in by acknowledging the enterprise nature of cloud migrations
+
+Be a Boundary Spanner!
+
+# Architecting to Scale
+
+## Concepts
+
+### Loosely Coupled Architecture 
+
+"Components can stand independently and require little or no knowledge of the inner workings of the other components"
+
+Layers of abstraction
+
+Permits more flexibility
+
+Interchangeable components
+
+**More atomic functional units**
+
+**Can scale components independently**
+
+| Horizontal Scaling | Vertical Scaling |
+| --- | --- |
+| Add more instances as demand increases | Add more CPU and/or RAM to existing instance as demand increases |
+| No downtime required to scale up or down | Requires restart to scale up or down |
+| Automatic using Auto-scaling Groups | Would require scripting to automate |
+| (Theoretically) Unlimited | Limited by instance sizes |
+
+Scale out - add an instance
+
+Scale up - add resources to an existing instance
+
+Scale in - remove an instance
+
+Scale down - remove CPU and RAM
+
+## Auto-Scaling
+
+Types of Auto-Scaling:
+
+| Name | What | Why |
+| --- | --- | --- |
+| Amazon EC2 Auto Scaling | Like the name says... focused on EC2 and nothing else | Setup scaling groups for EC2 instances; health checks to remove unhealthy instaces |
+| Application Auto Scaling | API used to control scaling for resources other than EC2 like Dynamo, ECS, EMR | Provides a common way to interact with the scalability of other services |
+| AWS Auto Scaling | Provides centralized way to manage scalability for whole stacks; Predictive scaling feature | Console that can manage both of the above from a unified standpoint |
+
+### EC2 Auto-Scaling Groups
+
+Automatically provides horizontal scaling (scale-out) for your landscape
+
+Triggered by an event or scaling action to either launch or terminate instances
+
+Availability, Cost and System Metrics can factor into scaling.
+
+Four scaling options:
+	
+	* Maintain - Keep a specific or minimum number of instances running
+
+	* Manual - Use maximum, minimum, or specific number of instances
+
+	* Schedule - Increase or decrease instances based on schedule
+
+	* Dynamic - Scale based on real-time metrics of the systems
+
+Need to set up an auto scaling group with a launch configuration
+
+Launch Configurations:
+
+	* Specify VPC and subnets for scaled instances
+
+	* Attach to a ELB
+
+	* Define a Health Check Grace Period - time period that the scaling policy will allow the system to spin up and become healthy before it starts alerting on certain problems on that instance
+
+	* Define size of group to stay at initial size
+
+	* Or use scaling policy which can be based from metrics
+
+Scaling Types:
+
+| Scaling Type | What | When |
+| --- | --- | --- |
+| Maintain | Hands-off way to maintain X number of instances | "I need 3 instances always." |
+| Manual | Manually change desired capacity via console or CLI | "My needs change so rarely that I can just manually add and remove." |
+| Scheduled | Adjust min/max instances based on specific times | "Every monday morning, we get a rush on our website." |
+| Dynamic | Scale in response to behavior of elements in the environment | "When CPU utilization gets to 70% on current instances, scale up." |
+
+EC2 Auto Scaling Policies (Dynamic):
+
+| Scaling | What | When |
+| --- | --- | --- |
+| Target Tracking Policy | Scale based on a predefined or custom metric in relation to a target value | "When CPU utilization gets to 70% on current instances, scale up." |
+| Simple Scaling Policy | Waits until health check and cool down period before evaluating new need | "Let's add new instances slow and steady." |
+| Step Scaling Policy | Responds to scaling needs with more sophistication and logic | "AGG! Add ALL the instances!" |
+
+Scaling Cooldown Concept for EC2:
+
+	* Cooldown period - Configurable duration that gives your scaling a chance to "come up to speed" and absorb load
+
+	* Default cooldown period is 300 seconds
+
+	* Automatically applies to **dynamic scaling** and optionally to manual scaling but **not supported for scheduled scaling**
+
+	* Can override default cooldown via scaling specific cool down - might choose to do so in a scale-down policy
+
+### AWS Application Auto Scaling
+
+| Scaling | What | When |
+| --- | --- | --- |
+| Target Tracking Policy | Initiates scaling events to try to track as closely as possible a given target metric | "I want my ECS hosts to stay at or below 70% CPU utilization." |
+| Step Scaling Policy | Based on a metric, adjusts capacity given certain defined thresholds | "I want to increase my EC2 Spot Fleet by 20% every time I add another 10,000 connections on my ELB." |
+| Scheduled Scaling Policy | Initiates scaling events based on a predefined time, day or date | "Every Monday at 0800, I want to increase the Read Capacity Units of my DynamoDB Table to 20,000" |
+
+### AWS Auto Scaling
+
+Can manage the EC2 Auto Scaling and Application Auto Scaling through 1 common console.
+
+AWS Predictive Scaling:
+
+	* Predictive scaling can dynamically scale based on learning your load and calculating expected capacity
+
+	* Without dynamic scaling, you can just use the data to adjust your own scaling policies
+
+	* You can also opt-out of this is you don't want AWS collecting this data.
+
+## Kinesis
+
+Collection of services for processing streams of various data
+
+Data is processed in "shards" -- with each shard able to ingest 1000 records per second
+
+A default limit of 500 shards, but you can request an increase to unlimited shards
+
+Record consists of Partition Key, Sequence Number and Data Blob (up to 1 MB)
+
+Transient Data Store -- Default retention of 24 hours, but can be configured for up to 7 days
+
+Kinesis Video Streams - process video data
+
+Kinesis Data Streams:
+
+	* Input - Capture and send data to Kinesis Data Streams
+
+	* Kinesis data Streams - Ingests and stores data streams for processing
+
+	* Processing tools - Build custom, real-time applications using Kinesis Data Analytics, stream processing frameworks like Apache Spark, or your code running on Amazon EC2 or AWS Lambda
+
+	* Output - Analyze streaming data using your favorite BI tools
+
+Kinesis Firehose:
+
+	* Input - Capture and send data to Kinesis Data Firehose
+
+	* Kinesis Data Firehose - Prepares and loads the data continuously to the destinations you choose
+
+	* Data stores - durably store the data for analytics
+
+	* Output - Analyze streaming data using analytics tools
+
+Kinesis Data Analytics:
+
+	* Input - Capture streaming data with Kinesis Data Firehose or Kinesis Data Streams
+
+	* Kinesis Data Analytics - Run standard SQL queries against data streams
+
+	* Output - Kinesis Data Analytics can send processed data to analytics tools so you can create alerts and respond in real-time
+
+## DynamoDB Scaling
+
+Throughput - Read and write capacity units
+
+Size - Max item size is 400KB
+
+DynamoDB Terminology:
+
+| Term | What |
+| --- | --- |
+| Partition | A (10GB) physical space where DynamoDB data is stored. |
+| Partition Key | A unique identifier for each record; sometimes called a **Hash Key** |
+| Sort Key | In combination with a partition key, optional second part of a composite key that defines storage order; Sometimes called a **Range Key** |
+
+DynamoDB Under the Hood:
+
+	* Scales out by adding 10 GB partitions
+
+| | Partition Calculations |
+| --- | --- |
+| By Capacity | (Total RCU / 3000) + (Total WCU / 1000) |
+| By Size | Total Size / 10 GB |
+| Total Partitions | Round Up for the MAX (By Capacity, by Size) |
+
+10 GB Table, 2000 RCU and WCU:
+
+	* By Capacity = (2000 RCU / 3000) + (2000 WCU / 1000) = **2.66**
+
+	* By Size =  10 GB / 10 GB = **1**
+
+	* Total Partitions = MAX(2.66, 1) = 2.66 Round Up = **3 Partitions**
+
+Read and write capacity is equally allocated across partitions. 
+
+Some burst capacity is allowed - can exceed capacity in a single partition if not using in other partitions, should design partition keys around trying to avoid whenever possible
+
+Which partition determined by Partition Key hash value. Should use a partition key that has a degree of variability in it
+
+If a lot of items have the same partition key, causes one partition to be overloaded with reads / writes (hot key/ partition issue)
+
+Auto Scaling for DynamoDB:
+
+	* Can set a target utilization and scale up when reached
+
+	* Using Target Tracking method to try to stay close to target utilization
+
+	* Currently does not scale down if table's consumption drops to zero
+
+	* Workaround 1: Send requests to the table until it auto scales down
+
+	* Workaround 2: Manually reduce the max capacity to be the same as the minimum capacity
+
+	* Also supports Global secondary indexes -- think of them like a copy of the table
+
+On-Demand Scaling for DynamoDB:
+
+	* Alternative to Auto-Scaling
+
+	* Useful if you can't deal with scaling lag or truly have no idea of the anticipated capacity requirements
+
+	* Instantly allocates capacity as needed with no concept of provisioned capacity
+
+	* Costs more than traditional provisioning and auto-scaling
+
+DynamoDB Accelerator (DAX):
+
+	* In-Memory cache that sits in front of a DynamoDB table and provides caching compatible with the DynamoDB API
+
+	* Good uses of DAX:
+	
+		* Require fastest possible reads such as live auctions or securities trading
+
+		* Read-intense scenarios where you want to offload the reads from DynamoDB
+
+		* Repeated reads agains a large set of DynamoDB data
+		
+	* Bad Uses of DAX
+
+		* Write-intensive applications that don't have many reads
+
+		* Applications where you use client caching methods
+
+## CloudFront Part 2
+
+Can delever content to your users faster by caching **static** and **dynamic** content at edge locations
+
+Dynamic content delivery is achieved using HTTP cookies forwarded from your origin
+
+Supports Adobe Flash Media Server's RTMP protocol but you have to choose RTMP delivery method
+
+Web distributions **also support media streaming and live streaming** but use HTTP or HTTPS
+
+Origins can be S3, EC2, ELB or another web server
+
+Multiple origins can be configured
+
+Use Behaviors to configure serving up origin content based on URL paths
+
+### Invalidation Requests
+
+1. Simply delete the file from the origin and wait for the TTL to expire
+
+2. Use the AWS Console to request invalidation for all content or a specific path such as /images/\* 
+
+3. Use the CloudFront API to submit an invalidation request
+
+4. Use third-party tools to perform CloudFront invalidation (CloudBerry, Ylastic, CDN Planet, CloudFront Purge Tool)
+
+### Zone Apex Support
+
+Your domain name with www or subdomain - forwards to cloudfront distribution
+
+### Geo-Restrictions
+
+Might want to do if you have regulatory restrictions / guidelines where you're not allowed to show or expose content to certain geographies or countries
+
+## SNS
+
+Enables a Publish/Subscribe design pattern
+
+Topics = A channel for publishing a notification
+
+Subscription = Configuring an endpoint to receive messages published on the topic
+
+Endpoint protocols include HTTP(S), Email, SMS, SQS, Amazon Device Messaging (push notifications), and Lambda
+
+Fan Out Architecture - Send events to multiple endpoints at once to perform different actions
+
+## SQS
+
+Reliable, highly-scalable, hosted message queuing service
+
+Available integration with KMS for encrypted messaging
+
+Transient storage -- default 4 days, max 14 days
+
+Optionally supports First-In First-Out queue ordering
+
+Maximum message size of 256KB but using a special Java SQS SDK, you can message as large as 2GB
+
+Standard Queue - no assurances that messages will enter or leave the queue based on when they arrived
+
+First-In First-Out (FIFO) Queue - Maintains the order in which the messages were received. Enforcing this means that if a message gets stuck, it will hold up all messages behind it, which can introduce latency or delay in clearing queues.
+
+### Amazon MQ
+
+Managed implementation of Apache ActiveMQ (message broker, takes in messages, manages them, and lets other applications access them via API)
+
+Fully managed and highly available within a region
+
+ActiveMQ API and support for JMS, NMS, MQTT, WebSocket
+
+Designed as a drop-in replacement for on-premise message brokers
+
+Use SQS if you are creating a new application from scratch
+
+Use MQ if you want an easy low-hassle path to migrate from existing message brokers to AWS
+
+## AWS Lambda, Serverless Application Manager, and EventBridge
+
+### AWS Lambda
+
+Allows you to run code on-demand without the need for infrastructure
+
+Supports Node.js, Python, Java, Go, and C#
+
+Extremely useful option for creating serverless architectures
+
+Code is stateless and executed on an event basis (SNS, SQS, S3, DynamoDB Streams, etc.)
+
+No fundamental limits to scaling a function since AWS dynamically allocates capacity in relation to events
+
+Fan-out architecture - A lambda invokes multiple other lambda functions to perform multiple operations in parallel
+
+### AWS Serverless Application Model
+
+Open source framework for building serverless apps on AWS
+
+Uses YAML as the configuration language
+
+Includes AWS CLI-like functionality to create, deploy and update serverless apps usin AWS services such as Lambda, DynamoDB and API Gateway
+
+Enables local testing and debugging of apps using a Lambda-like emulator via Docker
+
+Extension of CloudFormation so you can use everything CloudFormation can provide by way of resources and functions
+
+AWS provides Serverless Application Repository to catalog various premade serverless solutions
+
+AWS SAM:
+
+	* Uses YAML for templates
+
+	* Purpose-built to help make developing and deploying serverless apps as efficient as possible
+
+	* Generates CloudFormation scripts
+
+Serverless Framework:
+
+	* Uses YAML for templates
+
+	* Purpose-built to help make developing and deploying serverless apps as efficient as possible
+
+	* Generates CloudFormation scripts
+
+	* **Supports many other cloud providers such as Azure, GCP, IBM, CloudFlare, etc.**
+
+### Amazon EventBridge
+
+Designed to link variety of AWS and 3rd party apps to rules logic for launching other event-based actions
+
+## Simple Workflow Service (AWS SWF)
+
+Status tracking system
+
+Create distributed asynchronous systems as workflows
+
+Supports both sequential and parallel processing
+
+Tracks the state of your workflow which you interact with and update via API
+
+Best suited for human-enabled workflows like order fulfillment or procedural requests
+
+AWS recommends new applications -- look at Step Functions over SWF
+
+Components:
+
+	* Activity Worker - A program that interacts with the AWS SWF service to get tasks, process tasks, and return results
+
+	* Decider - A program that controls coordination of tasks such as their concurrency and scheduling
+
+Workers using SWF have to continuously "long poll" SWF to determine if there is any activity that they need to do
+
+## Step Functions and Batch
+
+### AWS Step Functions
+
+Managed workflow and orchestration platform
+
+Scalable and highly available
+
+Define your app as a state machine
+
+Create tasks, sequential steps, parallel steps, branching paths or timers
+
+Amazon State Language declarative JSON
+
+Apps can interact and update the stream via Step Function API
+
+Visual interface describes flow and realtime status
+
+Detailed logs of each step execution
+
+### AWS Batch
+
+Management tool for creating, managing and executing batch-oriented tasks using EC2 instances
+
+1. Create a Compute Environment. Managed or Unmanaged, Spot or On-Demand, vCPUs
+
+2. Create a Job Queue with priority and assigned to a Compute Environment
+
+3. Create Job Definition: Script or JSON, environment variables, mount points, IAM role, container image, etc.
+
+4. Schedule the Job
+
+### Comparisons
+
+| | When | Use Case |
+| --- | --- | --- |
+| Step Functions | Out-of-the-box coordination of AWS service components | Order Processing Flow |
+| Simple Workflow Service | Need to support external processes or specialized execution logic | Loan Application Process with Manual Review Steps |
+| Simple Queue Service | Messaging Queue; Store and forward patterns | Image Resize Process |
+| AWS Batch | Scheduled or reoccurring tasks that do not require heavy logic | Rotate Logs Daily on Firewall Appliance |
+
+## Elastic MapReduce (EMR) 
+
+A collection of open-source projects
+
+Hadoop HDFS - File system that the data is stored in, conducive to data analytics / manipulation
+
+Hadoop MapReduce - Actual framework used to do the processing of the data
+
+ZooKeeper - Resource Coordination - coordinates all the services to ensure they work together properly
+
+Oozie - Workflow framework
+
+Pig - Scripting Framework
+
+Hive - SQL interface into hadoop landscape
+
+Mahout - Machine Learning component
+
+HBase - Columnar Database
+
+Flume - Log Collection
+
+Sqoop - Data Transfer - facilitates the import of data to hadoop from other databases / data sources
+
+Ambari - Management and Monitoring console
+
+### AWS Elastic MapReduce
+
+Managed Hadoop framework for processing huge amounts of data
+
+Also supports Apache Spark, HBase, Presto and Flink
+
+Most commonly used for log analysis, financial analysis, or extract, transform and loading (ETL) activities
+
+A Step is a programmatic task for performing some process on the data (i.e. count words)
+
+A Cluster is a collection of EC2 instances provisioned by EMR to run your Steps
+
+Components of AWS EMR:
+
+	* Master Node
+
+	* Core Nodes - have HDFS storage to persistently store data
+
+	* Task Nodes - worker nodes, storage is ephemeral, there to work on the steps
+
+## Exam Tips
+
+### Auto Scaling Groups
+
+Know the different scaling options and policies
+
+Understand the difference and limitations between horizontal and vertical scaling
+
+Know what a cool down period (vs a health check grace period) is and how it might impact your responsiveness to demand
+
+### Kinesis
+
+Exam is likely to be restricted to the Data Stream use cases for Kinesis such as Data Streams and Firehose
+
+Understand shard concept and how partition keys and sequences enabled shards to manage data flow
+
+### DynamoDB Auto Scaling
+
+Know the new and old terminology and concept of a partition, partition key, and sort key in the context of DynamoDB
+
+Understand how DynamoDB calculates total partitions and allocates RCU and WCU across available partitions
+
+Conceptually know how data is stored across partitions
+
+### CloudFront
+
+Know that both static and dynamic content is supported
+
+Understand possible origins and how multiple origins can be used together with behaviors
+
+Know invalidation methods, zone apex and geo-restriction options
+
+### SNS
+
+Understand a loosely coupled architecture and the benefits it brings
+
+Know the different types of subscription endpoints supported
+
+### SQS
+
+Know the difference between Standard and FIFO queues
+
+Know difference between a Pub/Sub (SNS) and Message Queuing (SQS) architecture
+
+### Lambda
+
+Know what "Serverless" is in concept and how Lambda can facilitate such an architecture
+
+Know the languages supported by lambda
+
+### SWF
+
+Understand the difference an functions of a Worker and a Decider
+
+Best suited for human-enabled workflows like order fulfillment or procedural requests
+
+### Elastic MapReduce
+
+Understand the parts of a Hadoop landscape at a high level
+
+Know what a Cluster is and what Steps are
+
+Understand the roles of a Master Node, Core Nodes, and Task Nodes
+
+### Step Functions
+
+Managed workflow and orchestration platform considered preferred for modern development ove AWS Simple Workflow Service
+
+Supports tasks, sequential steps, parallel steps, branching, timers
+
+### AWS Batch
+
+Ideal for use cases where a routine activity must be performed at a specific interval or time of day
+
+Behind the scenes, EC2 instances are provisioned as workers to perform the batch activities then terminated when done
+
+### Serverless Application Model
+
+Open-source framework created to make serverless application development and deployment more efficient
+
+SAM CLI translates specific SAM YAML into CloudFormation scripts which is then used to deploy on AWS
+
+Serverless Application Repository contains lots of apps you can use as examples or elements of your own apps
+
+AWS SAM and the "Serverless Framework" are different things
+
+### Auto Scaling
+
+Be familiar with the positioning and different purposes of EC2 Auto Scaling vs Application Auto Scaling vs AWS Auto Scaling
+
+Know the different scaling options and policies
+
+Understand the difference and limitations between horizontal and vertical scaling
+
+Know what a cool down period is and how it might impact your responsiveness to demand
+
+### Whitepapers
+
+* https://d1.awsstatic.com/whitepapers/aws-web-hosting-best-practices.pdf
+
+* https://d0.awsstatic.com/whitepapers/aws-scalable-gaming-patterns.pdf
+
+* https://d0.awsstatic.com/whitepapers/performance-at-scale-with-amazon-elasticache.pdf
+
+* https://d1.awsstatic.com/whitepapers/cost-optimization-automating-elasticity.pdf
+
+* https://d0.awsstatic.com/whitepapers/architecture/AWS_Well-Architected_Framework.pdf
+
+* https://d1.awsstatic.com/whitepapers/microservices-on-aws.pdf
+
+## Pro Tips
+
+Elasticity will drive most benefit from the cloud
+
+Think Cloud-First designs if you're in a Green Field scenario even if you're deploying on-prem
+
+If you're in a "Brown Field" situation, create roadmaps for cloud-first enables like distributed applications, federated data and SOA
+
+Be careful to not let elasticity cover for poor development methods
+
+Microservice concepts help achieve scalability via decoupling, simplification and seperation of concerns
+
+# Business Continuity
+
+## Concepts
+
+Business Continuity (BC) - seeks to minimize business activity disruption when something unexpected happens
+
+Disaster Recovery (DR) - Act of responding to an event that threatens business continuity
+
+High Availability (HA) - Designing in **redundancies** to reduce the chance of impacting service levels
+
+Fault Tolerance - Designing in the ability to **absorb problems** without impacting service levels
+
+Service Level Agreement (SLA) - An agreed **goal or target** for a given service on its performance or availability
+
+Recovery Time Objective (RTO) - Time that it takes after a disruption to restore business processes to their service levels (**T** is for Time)
+
+Recovery Point Objective (RPO) - Acceptable amount of data loss measured in time (**P** is for data that goes "poof")
+
+Business Continuity Plan - defines RPO, RTO
+
+RTO, RPO - supports Business Continuity Plan, justifies High Availability Investment, defines Disaster Recovery
+
+High Availability Investment - migigates Disaster Recovery
+
+Disaster Recovery - delivers RTO, RPO
+
+### Disaster Categories
+
+| Category | Example |
+| --- | --- |
+| Hardware Failure | Network switch power supply fails and brings down LAN |
+| Deployment Failure | Deploying a patch that breaks a key ERP business process |
+| Load Induced | Distributed Denial of Service attack on your website |
+| Data Induced | Ariane 5 rocket explosion on June 4, 1996 |
+| Credential Expiration | An SSL/TLS certificate expires on your eCommerce site |
+| Dependency | S3 subsystem failure cause numerous other AWS service failures |
+| Infrastructure | A construction crew accidentally cuts a fiber optic data line |
+| Identifier Exhaustion | "We currently do not have sufficient capacity in the AZ you requested" |
+
+Human Error:
+
+	* "I thought I was in the QA system!"
+
+	* sudo rm -rf /
+
+	* truncate table 'invoices';
+
+## AWS Continuum of HA
+
+### Backup and Restore
+
+Pros:
+
+	* Very common entry point into AWS
+
+	* Minimal effort to configure
+
+Cons:
+
+	* Least flexibility
+
+	* Analogous to off-site backup storage
+
+### Pilot Light
+
+Pros:
+
+	* Cost effective way to maintain a "hot site" concept
+
+	* Suitable for a variety of landscapes and applications
+
+Cons:
+
+	* Usually requires manual intervention for failover
+
+	* Spinning up cloud environments will take minutes or hours
+
+	* Must keep AMIs up-to-date with on-prem counterparts
+
+### Warm Standby
+
+Pros:
+
+	* All services are up and ready to accept a failover faster within minutes or seconds
+
+	* Can be used as a "shadow environment" for testing or production staging
+
+Cons:
+
+	* Resources would need to be scaled to accept production load
+
+	* Still requires some environment adjustments but could be scripted
+
+### Multi-Site
+
+Pros:
+
+	* Ready all the time to take full production load -- effectively a mirrored data center
+
+	* Fails over in seconds or less
+
+	* No or little intervention required to fail over
+
+Cons:
+
+	* Most expensive DR option
+
+	* Can be perceived as wasteful as you have resources just standing around waiting for the primary to fail
+
+## Storage HA Options
+
+### EBS Volumes
+
+Annual Failure Rate of less than 0.2% compared to commodity hard drive at 4% (Given 1000 EBS volumes, expect around 2 to fail per year.)
+
+Availability target or 99.999%
+
+Replicated automatically **within a single AZ**
+
+**Vulnerable to AZ failure. Plan accordingly**
+
+Easy to snapshot, which is stored on S3 and multi-AZ durable
+
+You can copy snapshots to other regions as well
+
+Supports RAID configurations
+
+#### RAID Configurations
+
+| | RAID0 | RAID1 | RAID5 | RAID6 |
+| --- | --- | --- | --- | --- |
+| Redundancy | None | 1 drive can fail | 1 drive can fail | 2 drives can fail |
+| Reads | \*\*\*\* | \*\*\* | \*\*\*\* | \*\*\*\* |
+| Writes | \*\*\*\* | \*\*\* | \*\* | \* |
+| Capacity | 100 % |  50% | (n-1)/n | (n-2)/2 |
+
+AWS only recommends RAID0, RAID1
+
+#### RAID IOPS and Throughput
+
+| | Volume Size | Provisioned IOPS | Total Volume IOPS | Usable Space | Throughput |
+| No RAID | (1) 1000 GB | 4000 | 1000 GB | 500 MB/s |
+| RAID0 | (2) 500 GB | 4000 | **8000** | **1000 GB** | **1000 MB/s** |
+| RAID1 | (2) 500 GB | 4000 | 4000 | 500 GB | 500 MB/s |
+
+### S3 Storage
+
+Standard Storage Class (99.99% availability = 52.6 minutes / year)
+
+Standard Infrequent Access (99.9% Availability = 8.76 hours per year)
+
+One-zone Infrequent Access (99.5% availability = 1.83 days / year)
+
+Eleven 9s of durability (99.999999999%)
+
+Standard & Standard-IA have multi-AZ durability; One-zone only has single AZ durability
+
+Backing service for EBS snapshots and many other AWS services
+
+### Amazon EFS
+
+Implementation of NFS file system
+
+True file system as opposed to block storage (EBS) or object storage (S3)
+
+File locking, strong consistency, concurrently accessible
+
+Each file object and metadata is stored across multiple AZs
+
+Can be accessed from all AZs concurrently
+
+Mount targets are highly available
+
+### Other Options
+
+Amazon Storage Gateway:
+
+	* Good way to migrate on-prem data to AWS for offsite backup
+
+	* Best for continuous sync needs
+
+Snowball:
+
+	* Various options for migrating data to AWS based on volume
+
+	* Only for batch transfers of data
+
+Glacier:
+
+	* Safe offsite archive storage
+
+	* Long-term storage with rare retrieval needs
+
+## Compute HA Options
+
+Up-to-Date AMIs are critical for rapid fail-over
+
+AMIs can be copied to other regions for safety or DR staging
+
+Horizontally scalable architectures are preferred because risk can be spread across multiple smaller machines vs one large machine
+
+Reserved Instances is the only way to **guarantee** that resources will be available when needed
+
+Auto Scaling and Elastic Load Balancing work together to provide automated recovery by maintaining minimum instances
+
+Route 53 Health Checks also provide "self-healing" redirection of traffic
+
+## Database HA Options
+
+If possible, **choose DynamoDB over RDS** because of inherent fault tolerance
+
+If DynamoDB can't be used, chooes Aurora because of redundancy and automatic recovery features
+
+If Aurora can't be used, choose Multi-AZ RDS
+
+Frequent RDS snapshots can protect against data corruption or failure -- and they won't impact performance of multi-AZ deployment
+
+Regional replication is also an option, but will not be strongly consistent
+
+If Database on EC2, you'll have to design HA yourself
+
+### HA Notes for Redshift
+
+Currently, Redshift does not support multi-AZ deployments
+
+Best HA option is to use a multi-node cluster which supports data replication and node recovery
+
+A single node Redshift cluster does not support data replication, and you'll have to restore from a snapshot on S3 if a drive fails
+
+### HA Notes for ElastiCache
+
+Memcached:
+
+	* Because Memcached does not support replication, a node failure will result in data loss
+
+	* Use multiple nodes in each shard to minimize data loss on node failure
+
+	* Launch multiple nodes across available AZs to minimize data loss on AZ failure
+
+Redis:
+
+	* Use multiple nodes in each shard and distribute the nodes across multiple AZs
+
+	* Enable multi-AZ on the replication group to permit automatic failover if the primary node fails
+
+	* Schedule regular backups of your Redis cluster
+
+## Network HA Options
+
+By creating subnets in the available AZs, you create multi-AZ presence for your VPC
+
+Best practice is to create at least two VPN tunnels into your Virtual Private Gateway
+
+Direct Connect is not HA by default, so you need to establish a secondary connection via another Direct Connect (ideally with another provider) or use a VPN
+
+Route 53's Health Checks provide basic levels of redirecting DNS resolutions
+
+Elastic IPs allow you flexibility to change out backing assets without impacting name resolution
+
+For multi-AZ redundancy of NAT Gateways, create gateways in each AZ with routes for private subnets to use the local Gateway
+
+## Exam Tips
+
+### General Concepts
+
+Know the difference between Business Continuity, Disaster Recovery, and Service Levels
+
+Know the difference between High Availability and Fault Tolerance
+
+Understand the inter-relationships between High Availability and Fault Tolerance
+
+Understand the inter-relationships and how AWS uses the terms
+
+Know the difference between RTO and RPO
+
+Know the four general types of DR architectures and trade-offs of each
+
+### Storage Options
+
+Understand the HA capabilities and limitations of AWS storage options
+
+Know when to use each storage option to achieve the required level of recovery capability
+
+Understand RAID and the potential benefits and limitations
+
+### Compute Options
+
+Understand why horizontal scaling is preferred from an HA perspective
+
+Know that compute resources are finite in an AZ and know how to guarantee their availability
+
+Understand how Auto Scaling and ELB can contribute to HA
+
+### Database Options
+
+Know the HA attributes of the various Database services
+
+Understand the different HA approaches and risks for Memcached and Redis
+
+Know which RDS options require manual failover and which are automatic
+
+### Network Options
+
+Know which networking components are not redundant across AZs and how to architect for them to be redundant
+
+Understand the capabilities of Route 53 and Elastic IP in the context of HA
+
+### Whitepapers
+
+* https://docs.aws.amazon.com/prescriptive-guidance/latest/backup-recovery/backup-recovery.pdf
+
+* https://d1.awsstatic.com/whitepapers/getting-started-with-amazon-aurora.pdf
+
+* https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/wellarchitected-reliability-pillar.pdf
+
+## Pro Tips
+
+Failure Mode and Effects Analysis (FMEA):
+
+	* A systematic process to examine:
+
+		1. What could go wrong
+
+		2. What impact it might have
+
+		3. What is the likelihood of it occurring
+
+		4. What is our ability to detect and react
+
+Severity * Probability * Detection = Risk Priority Number
+
+Step 1 - Round up Possible Failures
+
+Step 2 - Assign Scores
+
+Step 3 - Prioritize on Risk
+
+# Deployment and Operations Management
+
+## Types of Deployment
+
+"Big Bang" - everything goes live at the same time
+
+Phased Rollout - more gradual over time
+
+Parallel Adoption - Implement the new while still using the old
+
+### Phased Rollout Types
+
+Rolling Deployment:
+
+	1. Create new Launch Configuration with the updated AMI
+
+	2. Start terminating old EC2 instances
+
+A/B Testing:
+
+	- test new solution with small amount of people and compare results with original solution
+
+Canary Release:
+
+	- Deploy for small amount, confirm no errors / disasters, then deploy for rest
+
+Blue-Green Deployment:
+
+	- Switch over to the new version (Green), if we have issues, failover to the original (Blue)
+
+	- The goal of blue/green deployments is to achieve immutable infrastructure, where you don't have to make changes to your application after it's deployed, but redeploy altogether
+
+Blue Green Methods:
+
+	* Update DNS with Route 53 to point to a new ELB or instance
+
+	* Swap Auto-scaling Group already primed with new version instances behind the ELB
+
+	* Change Auto-Scaling Group Launch Configuration to use new AMI version and terminate old instances
+
+	* Swap environment URL of Elastic Beanstalk
+
+	* Clone stack in AWS OpsWorks and update DNS
+
+Blue Green Contraindication:
+
+	* Data store schema is too tightly coupled to the code changes
+
+	* The upgrade requires special upgrade routines to run during deployment
+
+	* Off-the-shelf products might not be blue-green friendly
+
+## Continuous Integration and Deployment
+
+Continuous Integration - Merge code changes back to main branch as frequently as possible with automated testing as you go.
+
+Continuous Delivery - You have automated your release process to the point you can deploy at the click of a button
+
+Continuous Deployment - Each code change that passes all stages of the release process is released to production with no human intervention required
+
+### CI/CD Considerations
+
+Objective is to create smaller, incremental compartmentalized improvements and features
+
+Lowers deployment risk and tries to limit negative impact
+
+Test Automation game must be STRONG
+
+Feature toggle patterns useful for dealing with in-progress features not ready for release (versus more traditional branching strategies)
+
+Microservice architectures lend themselves well to CI/CD practices
+
+### AWS Deployment Lifecycle Tools
+
+AWS CodeCommit - hosted git repository
+
+AWS CodeBuild - helps us compile code, run tests, create deployment packages
+
+AWS CodeDeploy - deploy deployment packages on EC2, Lambda, Elastic Beanstalk, ECS, even on-prem
+
+AWS CodePipeline - Orchestration mechanism that helps do all these things together
+
+AWS X-Ray - Helps with debugging in a distributed / serverless architecture
+
+AWS CodeStar - Leverages other services and creates templates that are more turnkey
+
+## Elastic Beanstalk
+
+Orchestration service to make it push-button easy to deploy scalable web landscapes
+
+Wide range of supported platforms -- from Docker to PHP to Java to Node.js
+
+Multiple Environments within Application (DEV, QA, PRD, etc.)
+
+Great for ease of deployment, but not great if you need lots of control or flexibility
+
+Layers:
+
+	* Application Layer (Management Layer) - can have multiple environments
+
+	* Environments - Instances, Web server, Engines, Load Balancers, Monitoring, Scaling
+
+	* Application Versions
+
+### Elastic Beanstalk Deployment Options
+
+| Deployment Option | What | Deployment Time | Downtime? | Rollback Process |
+| --- | --- | --- | --- | --- |
+| All At Once | New application version is deployedto existing instances all at once, potentially resulting in downtime | \* | Yes | Manual |
+| Rolling | One by one, new application version is deployed to existing instances in batches | \*\* | No | Manual |
+| Rolling with Additional Batch | Launch new version instances prior to taking any old version instances out of service | \*\*\* | No | Manual |
+| Immutable | Launch a full set of new version instances in seperate auto-scaling group and only cuts over when health check is passed | \*\*\*\* | No | Terminate New Instances |
+| Traffic Splitting | Percent of client traffic is routed to new instances for purposes of "canary testing" | \*\*\*\* | No | Reroute DNS and Term New Instances |
+| Blue/Green | CNAME DNS entry changed when new version is fully up, leaving old version in place until new is fully verified | \*\*\*\* | No | Swap URL |
+
+## CloudFormation
+
+Infrastructure as Code!
+
+Using JSON or YAML, you can model and provision entire landscapes
+
+Repeatable, automatic deployments and rollbacks
+
+Nest common components for reusability
+
+Supports over 300 Resource Types (components of AWS Services)
+
+Want more? Supports custom resources via SNS or Lambda
+
+### CloudFormation Concepts
+
+Templates - The JSON or YAML text file that contains the instructions for building out the AWS environment
+
+Stacks - The entire environment described by the template and created, updated, and deleted as a single unit
+
+Change Sets - A summary of proposed changes to your stack that will allow you to see how those changes might impact your existing resources before implementing them
+
+Stack Policies:
+
+	* Protect specific resources within your stack from being unintentionally deleted or updated
+
+	* Add a Stack Policy via the console or CLI when creating a stack
+
+	* Adding a Stack Policy to an existing stack can only be done via CLI
+
+	* Once applied, a Stack Policy cannot be removed - but it can be modified via CLI
+
+	* By default, they protect everything, prohibiting changes to anything
+
+### Cloudformation Best Practices
+
+AWS provides Python "helper scripts" which can help you install software and start services on your EC2 instances
+
+Use CloudFormation to make changes to your landscape rather than going directly into the resources
+
+Make use of Change Sets to identify potential trouble spots in your updates
+
+Use Stack Policies to explicitly protect sensitive portions of your stack
+
+Use a version control system such as CodeCommit or GitHub to track changes to templates

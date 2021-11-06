@@ -1362,7 +1362,7 @@ Part of a multi-layer Least Privilege concept to explicitly allow and deny
 ## AWS Directory Services
 
 | Directory Service Option | Description | Best for... |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | AWS Cloud Directory | Cloud-native directory to share and control access to hierarchical data between applications | Cloud applications that need hierarchical data with complex relationships |
 | Amazon Cognito | Sign-up and sign-in functionality that scales to millions of users and federated to public social media services | Develop consumer apps or SaaS |
 | AWS Directory Service for Microsoft Active Directory | AWS-managed full Microsoft AD (standard or enterprise) running on Windows Server 2012 R2 | Enterprises that want hosted Microsoft AD or you need LDAP for Linux apps |
@@ -1643,7 +1643,7 @@ Consider AWS Certified Security -- Specialty or other security-minded certificat
 ## Migration Strategies
 
 | Migration Strategy | Description | Example |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | Re-Host | "Lift and Shift", simply move assets with no changes | Move on-prem MySQL database to EC2 Instance |
 | Re-Platform | "Lift and Reshape", Move assets but change underlying platforms | Migrate on-prem MySQL database to RDS MySQL |
 | Re-Purchase | "Drop and Shop", Abandon existing and purchase new. | Migrate legacy on-prem CRM system to salesforce.com |
@@ -2692,6 +2692,7 @@ AWS only recommends RAID0, RAID1
 #### RAID IOPS and Throughput
 
 | | Volume Size | Provisioned IOPS | Total Volume IOPS | Usable Space | Throughput |
+| --- | --- | --- | --- | --- | --- |
 | No RAID | (1) 1000 GB | 4000 | 1000 GB | 500 MB/s |
 | RAID0 | (2) 500 GB | 4000 | **8000** | **1000 GB** | **1000 MB/s** |
 | RAID1 | (2) 500 GB | 4000 | 4000 | 500 GB | 500 MB/s |
@@ -3048,3 +3049,576 @@ Make use of Change Sets to identify potential trouble spots in your updates
 Use Stack Policies to explicitly protect sensitive portions of your stack
 
 Use a version control system such as CodeCommit or GitHub to track changes to templates
+
+## Elastic Container Service
+
+ECS - Elastic Container Service
+
+EKS - Elastic Kubernetes (k8s) Service
+
+Managed, highly available, highly scalable  container platform
+
+| Amazon ECS | Amazon EKS |
+| --- | --- |
+| AWS-specific platform that supports Docker containers |
+| Compatible wiht upstream k8s its easy to lift and shift from other k8s |
+| Considered simpler to learn and use | Considered more feature-rich and complex with a steep learning curve |
+| Leverages AWS services like Route 53 and CloudWatch | A hosted k8s platform that handles many things internally |
+| "Tasks" are instances of containers that are run on underlying compute but more or less isolated | "Pods" are containers colocated with one another and can have shared access to each other |
+| Limited extensibility | Extensible via a wide variety of third-party and community add-ons |
+ 
+### Launch Types
+
+| Amazon EC2 Launch Type | Amazon Fargate Launch Type |
+| --- | --- |
+| You explicitly provision EC2 instances | The control plane asked for resources and Fargate automatically provisions |
+| You're responsible for upgrading, patching, care of EC2 pool | Fargate provisions compute as needed |
+| You must handle cluster optimization | Fargate handles cluster optimization |
+| More granular control over infrastructure | Limited control, as infrastructure is automated |
+
+## API Gateway
+
+Managed, high availability service to front-end REST APIs
+
+Backed with custom code via Lambda, as a proxy for another AWS Service or any other HTTP API on AWS or elsewhere
+
+Regionally based, private or edge optimized (deployed via CloudFront)
+
+Support API Keys and Usage Plans for user identification, throttling or quota management
+
+Using CloudFront behind the scenes and custom domains and SNI are supported
+
+Can be published as products and monetized on AWS Marketplace
+
+## Management Tools
+
+### AWS Config
+
+Allows you to assess, audit and evaluate configurations of your AWS resources
+
+Very useful for Configuration Management as part of an ITIL program
+
+Creates a baseline of various configuration settings and files then can track variations against that baseline
+
+AWS Config Rules can check resources for certain desired conditions and if violations are found, the resource is flagged as "noncompliant"
+
+Examples of Config Rules:
+
+	* Is Backup enabled on RDS?
+
+	* Is CloudTrail enabled on the AWS account?
+
+	* Are EBS volumes encrypted?
+
+### AWS OpsWorks
+
+Managed instance of Chef and Puppet -- two very popular automation platforms
+
+Provide configuration management to deploy code, automate tasks, configure instances, perform upgrades, etc.
+
+Has three offerings: **OpsWorks for Chef Automate**, **OpsWorks for Puppet Enterprise** and **OpsWorks Stacks**.
+
+OpsWorks for Chef Automate and Puppet Enterprise are fully managed implementations of each respective platform
+
+OpsWorks Stacks is an AWS creation and uses an embedded Chef client installed on EC2 instances to run Chef recipes
+
+OpsWorks stacks support EC2 instances and op-prem servers as well with an agent
+
+### AWS OpsWorks Stacks
+
+Stacks are collections of resources needed to support a service or application
+
+Layers represent different components of the application delivery hierarchy
+
+EC2 instances, RDS instances, and ELBs are examples of Layers
+
+Stacks can be cloned -- but only within the same region
+
+OpsWorks is a global service. But when you create a stack, you must specify a region and that stack can only control resources in that region (For example, you can't manage an EC2 instance created in EU-CENTRAL-1 from OpsWorks stack created for US-EAST-2)
+
+## AWS System Manager
+
+Centralized console and toolset for a variety of system management tasks
+
+Designed for managing a large fleet of systems -- tens or hundreds
+
+SSM Agent enables System Manager features and supports all OSs supported by OS as well as back to Windows Server 2003 and Raspbian (Raspberry Pi deployment of Debian)
+
+SSM Agent installed by default on recent AWS-provided base AMIs for Linux and Windows
+
+Managed AWS-based and on-premises based systems via the agent
+
+| Service | Description | Example |
+| --- | --- | --- |
+| Inventory | Collect OS, application and instances metadata about instances | Which instances have Apache HTTP Server 2.2.x or earlier? |
+| State Manager | Create states that represent a certain configuration is applied to instances | Keep track of which instances have been updated to the current stable version of Apache HTTP Server |
+| Logging | CloudWatch Log agent and stream logs directly to CloudWatch from instances | Stream logs of our web servers directly to CloudWatch for monitoring and notification |
+| Parameter Store | Shared secure storage for config data, connection strings, passwords, etc. | Store and retrieve RDS credentials to append to config file upon boot |
+| Insights Dashboard | Account-level view of CloudTrail, Config, Trust Advisor | Single viewport for any exceptions on config compliance |
+| Resource Groups | Group resource through tagging for organization | Create a dashboard for all assets belonging to our Production ERP landscape |
+| Maintenance Windows | Define scheduling for instances to patch, update apps, run scripts and more | Define hours of 00:00 to 02:00 as maintenance windows for Patch Manager |
+| Automation | Automating routine maintenance tasks and scripts | Stop DEV and QA instances every Friday and restart Monday morning |
+| Run Command | Run commands and scripts without logging in via SSH or RDP | Run a shell script on 53 different instances at the same time |
+| Patch Manager | Automates process of patching instances for updates | Keep a fleet at the same patch level by applying new security patches during next Maintenance Window |
+
+Patch Manager Baselines:
+
+	* Define categories of patches that are applied automatically and patches that must be applied manually, and how long to wait after patch release (e.g. AWS-DefaultPatchBaseline - Pre-defined baseline fo Windows Server 2008 to 2016)
+
+### AWS System Manager Documents
+
+| Type | Used With | Purpose |
+| --- | --- | --- |
+| Command Document | Run Command, State Manager | Run Command uses command documents to execute commands. State Manager uses command documents to apply a configuration. These actions can be run on one or more targets at any point during the lifecycle of an instance. |
+| Policy Document | State Manager | Policy documents enforce a policy on your targets. If the policy document is removed, the policy action (for example, collecting inventory) no longer happens |
+| Automation Document | Automation | Use automation documents when performing common maintenance and deployment tasks such as creating or updating an Amazon Machine Image (AMI) |
+
+## Enterprise Apps
+
+### Amazon Workspaces and AppStream
+
+Workspaces - desktop as a service, can remote into the way you would to any PC (i.e. Windows 10)
+
+AppStream - encapsulates specific applications and allows you to access them via a web browser (i.e. MS Word)
+
+Fully managed desktop-as-a-service (WorkSpaces) and application hosting (AppStream)
+
+Everything lives on AWS infrastructure and can be tightly managed and controlled
+
+Use Case: Highly regulated industries where security and confidentiality is a concern. Can be used to keep all data in a protected VPC and off local PCs
+
+Use Case: Remote or seasonal workers such as a distributed call center. Given remote workers virtual desktops or hosted applications and let them use their own PCs.
+
+Use Case: Allow customers to demo your product without them having to download and install it locally
+
+### Amazon Connect and Amazon Chime
+
+Amazon Connect: 
+
+	* Fully managed cloud-based contact center solution with configurable call handling, inbound and outbound telephony, interactive voice response, chatbot technology and analytics
+
+	* Can integrate with other applications like Customer Relationship Management (CRM) systems
+
+Amazon Chime (basically skype or zoom):
+
+	* Online meeting and video conferencing service
+
+	* Supports usual conferencing features like desktop sharing, group chat and session recording
+
+### Amazon WorkDocs and WorkMail
+
+Amazon WorkDocs (basically Google Docs):
+
+	* Online document storage and collaboration platform
+
+	* Supports version management, sharing documents and collaborative edits
+
+Amazon WorkMail (basically Gmail):
+
+	* Fully managed email and calendar as-a-service
+
+	* Compatible with Microsoft Exchange (Outlook), IMAP, Android and iOS mail clients
+
+### Amazon WorkLink and Alex for Business
+
+Amazon Worklink (secured reverse proxy):
+`
+	* Provide secure access to internal web applications for mobile devices
+
+	* When mobile user requests an app, it's rendered on a secure machine then the image is sent to the mobile client 
+
+Alexa for Business:
+
+	* Deploy Alexa functionality and skills internally in your enterprise
+
+	* Management functionaliy more appropriate for an enterprise organization then buying and provisioning individual Alexa devices
+
+## Machine Learning Landscape
+
+AI Services - App Developers, no ML experience required:
+
+	* Easy to use with no ML knowledge required
+
+	* Scalable and Robust
+
+	* Redundant and Fault Tolerant
+
+	* Pay per Use
+
+	* REST API and SDK
+
+ML Services - ML Developers and Data Scientists:
+
+	* Amazon SageMaker
+
+		* Ground Truth
+
+		* Notebooks
+
+		* Training
+
+		* Hosting
+		
+		* Algorithms
+
+		* Marketplace
+
+ML Frameworks and Infrastructure - ML Researchers and Academics:
+
+	* Frameworks:
+
+		* mxnet
+
+		* TensorFlow
+
+	* Interfaces:
+
+		* Gluon
+
+		* Keras
+
+	* Amazon Greengrass
+
+	* Amazon EC2
+
+	* AWS Deep Learning AMIs
+
+| | What | When |
+| --- | --- | --- |
+| Amazon Comprehend | Natural Language Processing (NLP) services that finds insight and relationships within text | Sentiment analysis of social media posts |
+| Amazon Forecast | Combines time-series data with other variables to deliver highly accurate forecasts | Forecast seasonal demand for a specific color of shirt |
+| Amazon Lex | Build conversational interfaces that can understand the extent and context of natural speech | Create a customer service chatbot to automatically handle routine requests |
+| Recommendation engine as a service based on demographic and behavioral data | Provide potential upsell products at checkout during a web transaction |
+| Amazon Polly | Text-To-Speech service supporting multiple languages, accents and voices | Provide dynamically generated personalized voice response for inbound callers |
+| Amazon Rekognition | Image and video analysis to parse and recognize objects, people, activities, and facial expressions |
+| Amazon Textract | Extract text, context and metadata from scanned documents | Automatically digitize and process physical paper forms |
+| Amazon Transcribe | Speech-to-Text as a service | Automatically create transcripts of recorded presentations |
+| Amazon Translate | Translate text to and from may different languages | Dynamically create localized web content for users based on their geography |
+
+## Exam Tips
+
+### Types of Deployments
+
+Understand the types of deployments and when each might be preferred in a given situation
+
+Know the various ways AWS can support Blue/Green deployments and when Blue/Green is **not** recommended
+
+### Continuous Integration and Continuous Deployment
+
+Understand conceptually Continuous Integration, Continuous Delivery, and Continuous Deployment and their considerations
+
+Know what AWS tools can be used to facilitate these methods of deployment
+
+### Elastic Beanstalk
+
+Know the components of Elasitic Beanstalk and the platforms supported
+
+Understand the deployment options with Elastic Beanstalk and the tradeoffs for each
+
+### CloudFormation
+
+Understand how CloudFormation delivers Infrastructure as Code and the benefits of that
+
+<u>**Strongly recommend**</u> hands-on work with CloudFormation via one of our more in-depth courses if you haven't worked with it before
+
+### Elastic Container Service
+
+Know the difference between ECS and EKS -- as well as the uniqueness of each
+
+Understand the difference between EC2 Launch Types and Fargate Launch Types
+
+### API Gateway
+
+Understand what (and how) you would deploy an API on API Gateway
+
+Remember that API Gateway is designed to serve up REST APIs
+
+### Management Tools
+
+Know when and what you can expect when using AWS Config
+
+Know the different flavors of AWS OpsWorks and, conceptually, what Chef and Puppet offer
+
+Understand the difference between AWS OpsWorks Stacks and AWS OpsWorks for Chef Automate
+
+Remember that OpsWorks is a global service, but you can only manage resources in the region you created the OpsWorks stack
+
+### System Manager
+
+Know the various services under the System Manager heading and how they help simplify management of large landscapes
+
+Can manage both AWS-based and on-prem systems so long as they are supported OSs (No IBM AIX for example)
+
+Understand Patch Manager pre-defined baselines and that they act as a pre-approval gatekeeper
+
+Understand the various SSM document types and their purposes
+
+### Whitepapers
+
+* https://d1.awsstatic.com/whitepapers/DevOps/infrastructure-as-code.pdf
+
+* https://d1.awsstatic.com/whitepapers/DevOps/practicing-continuous-integration-continuous-delivery-on-AWS.pdf
+
+* https://d1.awsstatic.com/whitepapers/overview-of-deployment-options-on-aws.pdf
+
+### Pro Tips
+
+The Cloud will open a whole new world of possibilities to landscape management and project deployment
+
+Blue/Green is not just for nimble web apps in the cloud
+
+It will be a hard transition to move to infrastructure as code. Training is key
+
+API Gateway + Lambda create loads of opportunity for agility and efficiency in the way of serverless platforms.
+
+# Cost Management
+
+## Concepts
+
+Capital Expenses (CapEx) - Money spent on long-term assets like property, buildings and equipment
+
+Operational Expenses (OpEx) - Money spent for on-going costs for running the business. Usually considered variable expenses
+
+Total Cost of Ownership (TCO) - A comprehensive look at the entire cost model of a given decision or option, often including both hard costs and soft costs
+
+Return on Investment (ROI) - The amount of money an entity can expect to receive back within a certain amount of time given an investment
+
+Many times, organizations don't have a good handle on their full on-prem data center costs(power, cooling, fire suppression, etc.)
+
+Soft costs are rarely tracked or even understood as a tangible expense
+
+Learning curve will be very different from person to person
+
+Business Plans usually include many assumptions which in turn require support organizations to create derivative assumptions -- sometimes layers deep
+
+Don't go it alone! Get help... make friends with your Finance department
+
+## Cost Optimization Strategies
+
+### Appropriate Provisioning
+
+Provision the resources you need and nothing more
+
+Consolidate where possible for greater density and lower complexity (multi-database RDS, containers)
+
+CloudWatch can help by monitoring utilization
+
+### Right-Sizing
+
+Using lowest-cost resource that still meets the technical requirements
+
+Architecting for most consistent use of resources is best vs spikes and valleys
+
+Loosely coupled architectures using SNS, SQS, Lambda and DynamoDB can smooth demand and create more predictability and consistency
+
+### Purchase Options
+
+For permanent applications or needs, Reserved Instances provide the best cost advantage
+
+Spot instances are best for temporary horizontal scaling
+
+EC2 Fleet lets you define target mix of On-Demand, Reserved and Spot Instances
+
+### Geographic Selection
+
+AWS Pricing can vary from region to region
+
+Consider potential savings by locating resources in a remote region if local access is not required
+
+Route 53 and CloudFront can be used to reduce potential latency of a remote region
+
+### Managed Services
+
+Leverage managed services such as MySQL RDS over self-managed options such as MySQL on EC2
+
+Cost savings gained through lower complexity and manual intervention
+
+RDS, RedShift, Fargate, and EMR are great examples of fully-managed services that replace traditionally complex and difficult installations with push-button ease
+
+### Optimized Data Transfer
+
+Data going out and between AWS regions can become a significant cost component
+
+Direct Connect can be a more cost-effective option given data volume and speed
+
+## Tagging and Resource Groups
+
+Tags are **THE NUMBER ONE BEST THING** you can do to help manage your AWS assets!
+
+Tags are just arbitrary name/value pairs that you can assign to virtually all AWS assets to serve as metadata
+
+Tagging strategies can be used for Cost Allocation, Security, Automation, and many other uses (For example, we can use a tag in an AWS IAM policy to implement access controls to certain resources)
+
+Enforcing standardized tagging can be done via AWS Config Rules or custom scripts (For example, EC2 instances not properly tagged are stopped or terminated nightly)
+
+Most resources can have up to 50 tags
+
+### AWS Resource Groups
+
+Resource Groups are groupings of AWS assets defined by tags
+
+Create custom consoles to consolidate metrics, alarms, and config details around given tags
+
+Common Resource Groupings:
+
+	* Environments (DEV, QA, PRD)
+
+	* Project Resources
+
+	* Collection of resources supporting key business processes
+
+	* Resources allocated to various departments or cost centers
+
+## Spot and Reserved Instances
+
+### Reserved Instances
+
+Purchase (or agree to purchase) usage of EC2 instances in advance for a significant discount over On-Demand pricing
+
+Provides capacity reservation when used in a specific AZ
+
+AWS Billing automatically applies discounted rates when you launch an instance that matches your purchased RI
+
+EC2 has three RI types: Standard, Convertible, and Scheduled
+
+Can be shared across multiple accounts within Consolidated Billing
+
+If you find you don't need your RI's, you can try to sell them on the Reserved Instance Marketplace
+
+| | Standard | Convertible |
+| --- | --- | --- |
+| Terms | 1 year, 3 year | 1 year, 3 year |
+| Average Discount off On-Demand | 40% - 60% | 31% - 54% |
+| Change AZ, Instances Size, Networking Type | Yes via API or console | Yes via API or console |
+| Change instance family, OS, Tenancy, Payment Options | **No** | Yes | Benefits from Price Reductions | **No** | Yes |
+| Sellable on Reserved Instances Marketplace | Yes (Sale proceeds must be deposited in US bank account | Coming Soon |
+
+Attributes:
+
+	* Instance Type - designates CPU, memory, networking capability
+
+	* Platform - Linux, SUSE Linux, RHEL, Microsoft Windows, Microsoft SQL Server
+
+	* Tenancy - Default (shared) tenancy or Dedicated tenancy
+
+	* Availability Zone (optional) - IF AZ is selected, RI is reserved and discount applies to that AZ (Zonal RI). **If no AZ is specified, no reservation is created** but the discount is applied to any instance in the family in any AZ in the region (Regional RI)
+
+	* You can change a Zonal RI to Regional RI via the console or ModifyReservedInstances API
+
+### Spot Instances
+
+Excess EC2 capacity that AWS tries to sell on a market exchange basis
+
+Customer creates a Spot Request and specifies AMI, desired instance types, and other key information
+
+Customer defines highest price willing to pay for instance. If capacity is constrained and others are willing to pay more, your instance might get terminated or stopped
+
+Spot request can be a "fill and kill" (One-Time Request), "maintain", or "duration based"
+
+For "One-Time Request, instance is **terminated and ephemeral data lost**
+
+For "Request and Maintain", instance can be configured to Terminate, Stop or Hibernate until price point can be met again
+
+Dedicated Instance:
+
+	* Virtualized instances on hardware just for you
+
+	* May share hardware with other non-dedicated instances in the same account
+
+	* Available as On-Demand, Reserved Instances, and Spot Instances
+
+	* Cost additional $2 per hour per regions
+
+Dedicated Host:
+
+	* Physical servers dedicated to just your use
+
+	* You then have control over which instances are deployed on that host.
+
+	* Available as On-Demand or with Dedicated Host Reservation
+
+	* Useful if you have server-bound software licenses that use metrics like per-core, per-socket, or per-VM
+
+	* Each dedicated host can only run one EC2 instances size and type
+
+## Cost Management Tools
+
+### AWS Budgets
+
+Allows you to set pre-defined limits and notifications if nearing a budget or exceeding the budget
+
+Can be based on Cost, Usage, Reserved Instance Utilization or Reserved Instance Coverage
+
+Useful as a method to distribute cost and usage awareness and responsibility to platform users
+
+### Consolidated Billing
+
+Enable a single Payer account that's locked down to only those who need access
+
+Economies of scale by bringing together resource consumption across accounts
+
+### Trusted Advisor
+
+Runs a series of checks on your resources and proposes suggested improvements
+
+Can help recommend cost optimization adjustments like reserved instances or scaling adjustments
+
+Core checks are available to all customers
+
+Full Trusted Advisor benefits require a Business or Enterprise support plan
+
+## Exam Tips
+
+### Costing in General
+
+Understand the difference between CapEx and OpEx models
+
+Understand TCO, ROI, and the challenges faced in these activities
+
+### Cost Optimization Strategies
+
+Know conceptually the variety of ways customers can approach cost optimization on AWS
+
+Fully understand the Cost Optimization Pillar whitepaper
+
+### Tagging and Resource Groups
+
+Understand the various common uses for tagging and the ways you can implement/enforce a tagging strategy
+
+Know when and how to create Resource Groups, and don't be tricked into thinking they are anything more than a logical grouping
+
+### Spot and Reserved Instances
+
+Know the differences and limitations for the different types of Reserved Instances, including Zonal and Regional
+
+Understand how Spot instances work and when they are best used 
+
+Understand Dedicated Instances and Dedicated Hosts
+
+### Cost Management Tools
+
+Know how and when you would use AWS Budgets
+
+Understand the benefits of consolidated billing
+
+Know how Trusted Advisor can help customers optimize and improve their AWS landscapes
+
+### Whitepapers
+
+* https://d1.awsstatic.com/whitepapers/architecture/AWS-Cost-Optimization-Pillar.pdf
+
+* https://d1.awsstatic.com/whitepapers/total-cost-of-operation-benefits-using-aws.pdf
+
+* https://d1.awsstatic.com/whitepapers/introduction-to-aws-cloud-economics-final.pdf
+
+## Pro Tips
+
+Be extra careful around the TCO and ROI minefield
+
+The real benefit of a Cloud Migration is Agility and Flexibility. Cost alone is typically not the strongest business case
+
+Think of cost optimization as a long-term effort -- don't spend too much time trying to micro-manage it up-front
+
+Implement a Tagging Strategy out of the gate!
+
+Be aggressive in formulating a pilot project: large-scale benefits make for dramatic business cases, where small-scale wins easily be ignored
